@@ -1,0 +1,291 @@
+{% extends "client/base.html" %}
+
+{% block title %}我的关注 - 师备云{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="text-center mb-2">
+                    <i class="bi bi-heart-fill text-danger"></i> 我的关注
+                </h2>
+                <p class="text-center text-muted">关注你喜欢的作者，及时获取他们的最新文章</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-4" id="followTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="following-tab" data-bs-toggle="tab" data-bs-target="#following" type="button" role="tab">
+                            <i class="bi bi-heart-fill"></i> 已关注
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover" type="button" role="tab">
+                            <i class="bi bi-search"></i> 发现作者
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="followTabsContent">
+                    <div class="tab-pane fade show active" id="following" role="tabpanel">
+                        <div id="followingLoading" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">加载中...</p>
+                        </div>
+
+                        <div id="followingContent" style="display: none;">
+                            <div class="row" id="followingContainer"></div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="discover" role="tabpanel">
+                        <div id="discoverLoading" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">加载中...</p>
+                        </div>
+
+                        <div id="discoverContent" style="display: none;">
+                            <div class="row" id="discoverContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadFollows();
+
+    document.getElementById('discover-tab').addEventListener('shown.bs.tab', function() {
+        if (document.getElementById('discoverContent').style.display === 'none') {
+            loadFollows();
+        }
+    });
+});
+
+async function loadFollows() {
+    try {
+        const response = await fetch('/api/follows');
+        const data = await response.json();
+
+        if (data.error) {
+            return;
+        }
+
+        renderFollowing(data.following);
+        renderDiscover(data.available_authors);
+    } catch (error) {
+    }
+}
+
+function renderFollowing(following) {
+    document.getElementById('followingLoading').style.display = 'none';
+    document.getElementById('followingContent').style.display = 'block';
+
+    const container = document.getElementById('followingContainer');
+
+    if (following.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-heart-x" style="font-size: 4rem; color: #ccc;"></i>
+                <p class="mt-3 text-muted">还没有关注任何作者</p>
+                <button class="btn btn-primary" onclick="document.getElementById('discover-tab').click()">
+                    <i class="bi bi-search"></i> 去发现喜欢的作者
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    following.forEach(author => {
+        const avatarHtml = author.avatar 
+            ? `<img src="${author.avatar}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" alt="${author.username}">`
+            : `<div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+               </div>`;
+        
+        html += `
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="card h-100 border-danger">
+                    <div class="card-body text-center">
+                        <div class="mb-3">${avatarHtml}</div>
+                        <h6 class="card-title">${author.username}</h6>
+                        <p class="card-text small text-muted">${author.bio || '暂无个人简介'}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-file-earmark-text"></i> ${author.post_count || 0} 篇文章
+                        </small>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-danger" onclick="toggleFollow(${author.author_id}, this)">
+                                <i class="bi bi-heart-fill"></i> 已关注
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function renderDiscover(authors) {
+    document.getElementById('discoverLoading').style.display = 'none';
+    document.getElementById('discoverContent').style.display = 'block';
+
+    const container = document.getElementById('discoverContainer');
+
+    if (authors.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
+                <p class="mt-3 text-muted">暂未发现其他作者</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    authors.forEach(author => {
+        const avatarHtml = author.avatar 
+            ? `<img src="${author.avatar}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" alt="${author.username}">`
+            : `<div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+               </div>`;
+        
+        html += `
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">${avatarHtml}</div>
+                        <h6 class="card-title">${author.username}</h6>
+                        <p class="card-text small text-muted">${author.bio || '暂无个人简介'}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-file-earmark-text"></i> ${author.post_count || 0} 篇文章
+                        </small>
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleFollow(${author.id}, this)">
+                                <i class="bi bi-plus-lg"></i> 关注
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+async function toggleFollow(authorId, button) {
+    const originalText = button.innerHTML;
+    const originalClass = button.className;
+
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+        const response = await fetch('/api/follows', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                author_id: authorId
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'followed') {
+            button.className = 'btn btn-sm btn-outline-danger';
+            button.innerHTML = '<i class="bi bi-heart-fill"></i> 已关注';
+            showToast('关注成功', 'success');
+            
+            setTimeout(() => {
+                loadFollows();
+            }, 1000);
+        } else if (data.status === 'unfollowed') {
+            button.className = 'btn btn-sm btn-outline-primary';
+            button.innerHTML = '<i class="bi bi-plus-lg"></i> 关注';
+            showToast('已取消关注', 'info');
+            
+            setTimeout(() => {
+                loadFollows();
+            }, 1000);
+        }
+    } catch (error) {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type} border-0 position-fixed bottom-0 end-0 m-3`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+</script>
+
+<style>
+.nav-tabs .nav-link {
+    color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 5px;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.toast {
+    z-index: 9999;
+}
+</style>
+{% endblock %}

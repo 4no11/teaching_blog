@@ -1,0 +1,962 @@
+{% extends "client/base.html" %}
+
+{% block title %}课件智能优化 - 师备云{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="hero-section position-relative overflow-hidden">
+            <div class="hero-background"></div>
+            <div class="hero-content position-relative">
+                <div class="hero-icon">
+                    <i class="bi bi-magic"></i>
+                </div>
+                <h1 class="hero-title">
+                    <span class="gradient-text">课件智能优化</span>
+                </h1>
+                <p class="hero-subtitle">
+                    <i class="bi bi-lightning-charge"></i>
+                    AI分析课件内容，提出优化建议，自动生成摘要和学习目标
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">优化功能</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">支持格式</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">无限可能</div>
+                    </div>
+                </div>
+                
+                <div class="upload-section text-center mt-4">
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('coursewareFile').click()">
+                        <i class="bi bi-cloud-upload"></i>
+                        <p>点击或拖拽上传课件文件</p>
+                        <p class="small">支持 PPT、Word、PDF 格式</p>
+                    </div>
+                    <input type="file" id="coursewareFile" accept=".ppt,.pptx,.doc,.docx,.pdf" style="display: none;" onchange="handleFileSelect(event)">
+                    <div id="uploadStatus" class="mt-2" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card planner-card h-100 animate-fade-in-1">
+            <div class="card-header planner-header text-white">
+                <ul class="nav nav-tabs card-header-tabs" id="toolTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="analyze-tab" data-bs-toggle="tab" data-bs-target="#analyze-tab-pane" type="button" role="tab">
+                            <i class="bi bi-graph-up"></i> 课件分析
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-tab-pane" type="button" role="tab">
+                            <i class="bi bi-list-ul"></i> 摘要目标
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="layout-tab" data-bs-toggle="tab" data-bs-target="#layout-tab-pane" type="button" role="tab">
+                            <i class="bi bi-layout-text-window"></i> 排版建议
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="knowledge-tab" data-bs-toggle="tab" data-bs-target="#knowledge-tab-pane" type="button" role="tab">
+                            <i class="bi bi-lightbulb"></i> 知识点提取
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reflection-tab" data-bs-toggle="tab" data-bs-target="#reflection-tab-pane" type="button" role="tab">
+                            <i class="bi bi-journal-check"></i> 教学反思
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="toolTabsContent">
+                    <div class="tab-pane fade show active" id="analyze-tab-pane" role="tabpanel">
+                        <form id="analyzeForm">
+                            <div class="mb-3">
+                                <label for="coursewareTitle" class="form-label">课件标题</label>
+                                <input type="text" class="form-control" id="coursewareTitle" placeholder="输入课件标题（选填）">
+                            </div>
+                            <div class="mb-3">
+                                <label for="coursewareContent" class="form-label">课件内容 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="coursewareContent" rows="10" placeholder="粘贴课件内容..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-search"></i> 分析课件
+                            </button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="summary-tab-pane" role="tabpanel">
+                        <form id="summaryForm">
+                            <div class="mb-3">
+                                <label for="summaryContent" class="form-label">课件内容 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="summaryContent" rows="12" placeholder="粘贴课件内容，自动生成摘要和学习目标..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-list-check"></i> 生成摘要目标
+                            </button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="layout-tab-pane" role="tabpanel">
+                        <form id="layoutForm">
+                            <div class="mb-3">
+                                <label for="layoutContent" class="form-label">课件内容 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="layoutContent" rows="8" placeholder="粘贴课件内容..." required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pageCount" class="form-label">预计页数</label>
+                                <input type="number" class="form-control" id="pageCount" value="10" min="1" max="100">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-layout-wtf"></i> 获取排版建议
+                            </button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="knowledge-tab-pane" role="tabpanel">
+                        <form id="knowledgeForm">
+                            <div class="mb-3">
+                                <label for="knowledgeTitle" class="form-label">课件标题</label>
+                                <input type="text" class="form-control" id="knowledgeTitle" placeholder="输入课件标题（选填）">
+                            </div>
+                            <div class="mb-3">
+                                <label for="knowledgeContent" class="form-label">课件内容 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="knowledgeContent" rows="10" placeholder="粘贴课件内容，自动提取核心知识点..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-lightbulb"></i> 提取知识点
+                            </button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="reflection-tab-pane" role="tabpanel">
+                        <form id="reflectionForm">
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">学科</label>
+                                <input type="text" class="form-control" id="subject" placeholder="例如：数学、语文、英语">
+                            </div>
+                            <div class="mb-3">
+                                <label for="grade" class="form-label">年级</label>
+                                <select class="form-select" id="grade">
+                                    <option value="">请选择年级</option>
+                                    <option value="小学">小学</option>
+                                    <option value="初中">初中</option>
+                                    <option value="高中">高中</option>
+                                    <option value="大学">大学</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="teachingProcess" class="form-label">教学过程记录 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="teachingProcess" rows="8" placeholder="记录本节课的教学过程，包括时间分配、学生反应、遇到的问题等..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-journal-medical"></i> 生成教学反思
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        <div class="card result-card h-100 animate-fade-in-2">
+            <div class="card-header d-flex justify-content-between align-items-center result-header">
+                <span><i class="bi bi-clipboard-check"></i> 分析结果</span>
+                <button class="btn btn-sm btn-outline-secondary" id="copyBtn" style="display: none;" onclick="copyContent()">
+                    <i class="bi bi-clipboard"></i> 复制内容
+                </button>
+            </div>
+            <div class="card-body" id="resultContainer">
+                <div class="text-center text-muted py-5" id="emptyState">
+                    <i class="bi bi-lightbulb"></i>
+                    <p class="mt-3">输入课件内容后点击相应按钮，AI将自动分析并给出建议</p>
+                </div>
+                <div id="loadingState" style="display: none;">
+                    <div class="d-flex justify-content-center align-items-center py-5">
+                        <div class="spinner-border text-success me-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span>AI正在分析，请稍候...</span>
+                    </div>
+                </div>
+                <div id="resultContent" style="display: none;">
+                    <div class="result-text" id="resultText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info info-card animate-fade-in-3">
+            <h5><i class="bi bi-info-circle"></i> 功能说明</h5>
+            <ul class="mb-0">
+                <li><strong>课件分析</strong>：输入课件内容，AI从内容完整性、逻辑结构、可读性等方面进行全面分析，给出具体优化建议</li>
+                <li><strong>摘要目标</strong>：自动生成课件摘要和三维学习目标（知识与技能、过程与方法、情感态度与价值观）</li>
+                <li><strong>排版建议</strong>：根据内容提供页面分配、字体配色、重点突出等实用排版指南</li>
+                <li><strong>知识点提取</strong>：智能提取核心知识点和重点内容，分析知识结构和教学重难点</li>
+                <li><strong>教学反思</strong>：输入教学过程记录，AI帮助生成教学反思要点和改进建议</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* 英雄区域样式 */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.hero-content {
+    z-index: 2;
+}
+
+.hero-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #fff, #f0f8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+/* 上传区域样式 */
+.upload-section {
+    margin-top: 2rem;
+}
+
+.upload-area {
+    border: 3px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 40px 20px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: white;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.upload-area:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.upload-area.dragover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.upload-area i {
+    font-size: 3rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.upload-area p {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.upload-area p.small {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.planner-card .card-header,
+.result-card .card-header {
+    border-radius: 16px 16px 0 0;
+}
+
+.planner-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.result-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.result-header span {
+    color: white;
+    font-weight: 600;
+}
+
+/* 表单样式 */
+.form-floating > label {
+    color: #6c757d;
+}
+
+.form-control {
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+.form-select {
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+}
+
+/* 按钮样式 */
+.btn {
+    border-radius: 12px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3, #64408b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    border: none;
+    box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #0d8c81, #2fd471);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+}
+
+.btn-outline-secondary {
+    border: 1px solid #6c757d;
+    background: white;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* 标签页样式 */
+.nav-tabs {
+    border: none;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.nav-item {
+    flex: 1;
+    margin: 0 2px;
+}
+
+.nav-link {
+        border: none !important;
+        border-radius: 12px 12px 0 0 !important;
+        padding: 0.75rem 1rem !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        color: #4a5568 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.95) !important;
+        color: #2d3748 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .nav-link.active {
+        background: rgba(255, 255, 255, 1) !important;
+        color: #2d3748 !important;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+/* 结果区域样式 */
+#resultContainer {
+    min-height: 300px;
+}
+
+#emptyState {
+    text-align: center;
+    color: #6c757d;
+    padding: 4rem 2rem;
+}
+
+#emptyState i {
+    font-size: 3rem;
+    opacity: 0.6;
+    margin-bottom: 1rem;
+}
+
+#loadingState {
+    display: none;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+#loadingState .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    margin-right: 1rem;
+    border-color: #667eea transparent #667eea transparent;
+}
+
+#resultContent {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.result-text {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+.result-text strong {
+    color: #667eea;
+}
+
+.result-text h3, .result-text h4, .result-text h5 {
+    color: #2c3e50;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.result-text ul, .result-text ol {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.result-text li {
+    margin-bottom: 0.5rem;
+}
+
+/* 信息卡片样式 */
+.info-card {
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(248, 249, 250, 0.8), rgba(233, 236, 239, 0.8));
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.info-card h5 {
+    color: #667eea;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-card ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.info-card li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.info-card strong {
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-fade-in-1 {
+    animation: fadeInUp 0.6s ease 0.1s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-2 {
+    animation: fadeInUp 0.6s ease 0.2s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-3 {
+    animation: fadeInUp 0.6s ease 0.3s forwards;
+    opacity: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+        min-height: 250px;
+    }
+    
+    .gradient-text {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .hero-stats {
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        flex: 1 1 30%;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .upload-area {
+        padding: 30px 15px;
+    }
+    
+    .upload-area i {
+        font-size: 2.5rem;
+    }
+    
+    .nav-item {
+        margin: 0 1px;
+    }
+    
+    .nav-link {
+        padding: 0.6rem 0.8rem !important;
+        font-size: 0.9rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .info-card {
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload(files[0]);
+        }
+    });
+});
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        handleFileUpload(file);
+    }
+}
+
+function handleFileUpload(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const allowedExts = ['ppt', 'pptx', 'doc', 'docx', 'pdf'];
+    
+    if (!allowedExts.includes(ext)) {
+        showUploadStatus('不支持的文件格式，请上传PPT、Word或PDF文件', 'danger');
+        return;
+    }
+    
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showUploadStatus('文件大小不能超过10MB', 'danger');
+        return;
+    }
+    
+    showUploadStatus('<i class="bi bi-hourglass-split"></i> 正在解析文件...', 'info');
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('/api/ai/upload-courseware', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            showUploadStatus('<i class="bi bi-exclamation-triangle"></i> ' + data.error, 'danger');
+        } else if (data.success) {
+            showUploadStatus('<i class="bi bi-check-circle"></i> 文件解析成功，已自动填入内容区', 'success');
+            
+            const content = data.content;
+            document.getElementById('coursewareContent').value = content;
+            document.getElementById('summaryContent').value = content;
+            document.getElementById('layoutContent').value = content;
+            document.getElementById('knowledgeContent').value = content;
+            
+            setTimeout(() => {
+                document.getElementById('uploadStatus').style.display = 'none';
+            }, 3000);
+        }
+    })
+    .catch(error => {
+        showUploadStatus('<i class="bi bi-exclamation-triangle"></i> 上传失败，请稍后重试', 'danger');
+    });
+}
+
+function showUploadStatus(message, type) {
+    const statusDiv = document.getElementById('uploadStatus');
+    statusDiv.innerHTML = '<div class="alert alert-' + type + ' py-2 small">' + message + '</div>';
+    statusDiv.style.display = 'block';
+}
+
+document.getElementById('analyzeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const content = document.getElementById('coursewareContent').value.trim();
+    const title = document.getElementById('coursewareTitle').value.trim();
+    
+    if (!content) {
+        alert('请输入课件内容');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/ai/courseware-analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content, title: title})
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError(data.error);
+        } else {
+            showResult(data.analysis);
+        }
+    } catch (error) {
+        showError('网络错误，请稍后重试');
+    }
+});
+
+document.getElementById('summaryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const content = document.getElementById('summaryContent').value.trim();
+    
+    if (!content) {
+        alert('请输入课件内容');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/ai/courseware-summary', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content})
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError(data.error);
+        } else {
+            showResult(data.summary);
+        }
+    } catch (error) {
+        showError('网络错误，请稍后重试');
+    }
+});
+
+document.getElementById('layoutForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const content = document.getElementById('layoutContent').value.trim();
+    const pageCount = document.getElementById('pageCount').value;
+    
+    if (!content) {
+        alert('请输入课件内容');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/ai/courseware-layout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content, page_count: parseInt(pageCount)})
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError(data.error);
+        } else {
+            showResult(data.layout);
+        }
+    } catch (error) {
+        showError('网络错误，请稍后重试');
+    }
+});
+
+document.getElementById('knowledgeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const content = document.getElementById('knowledgeContent').value.trim();
+    const title = document.getElementById('knowledgeTitle').value.trim();
+    
+    if (!content) {
+        alert('请输入课件内容');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/ai/extract-knowledge', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: content, title: title})
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError(data.error);
+        } else {
+            showResult(data.knowledge);
+        }
+    } catch (error) {
+        showError('网络错误，请稍后重试');
+    }
+});
+
+document.getElementById('reflectionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const process = document.getElementById('teachingProcess').value.trim();
+    const subject = document.getElementById('subject').value.trim();
+    const grade = document.getElementById('grade').value;
+    
+    if (!process) {
+        alert('请输入教学过程记录');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/ai/teaching-reflection', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({process: process, subject: subject, grade: grade})
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError(data.error);
+        } else {
+            showResult(data.reflection);
+        }
+    } catch (error) {
+        showError('网络错误，请稍后重试');
+    }
+});
+
+function showLoading() {
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('resultContent').style.display = 'none';
+    document.getElementById('copyBtn').style.display = 'none';
+}
+
+function showResult(content) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('resultContent').style.display = 'block';
+    document.getElementById('resultText').innerHTML = content.replace(/\n/g, '<br>');
+    document.getElementById('copyBtn').style.display = 'inline-block';
+}
+
+function showError(message) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('resultContent').style.display = 'block';
+    document.getElementById('resultText').innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> ' + message + '</div>';
+    document.getElementById('copyBtn').style.display = 'none';
+}
+
+function copyContent() {
+    const content = document.getElementById('resultText').innerText;
+    navigator.clipboard.writeText(content).then(function() {
+        const btn = document.getElementById('copyBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> 已复制';
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

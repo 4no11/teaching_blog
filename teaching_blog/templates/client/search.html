@@ -1,0 +1,76 @@
+{% extends "client/base.html" %}
+
+{% block title %}搜索: {{ keyword }} - 师备云{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="mb-2">搜索结果</h2>
+    <p class="text-muted">关键词: "{{ keyword }}"</p>
+</div>
+
+{% if keyword %}
+    {% if posts.items %}
+        <div class="row">
+            {% for post in posts.items %}
+            <div class="col-md-6 mb-4">
+                <div class="card post-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('client.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ post.summary[:150] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> {{ post.created_at.strftime('%Y-%m-%d') }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-eye"></i> {{ post.views }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('client.search', keyword=keyword, page=posts.prev_num) }}">上一页</a>
+                    </li>
+                {% endif %}
+                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == posts.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('client.search', keyword=keyword, page=page_num) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('client.search', keyword=keyword, page=posts.next_num) }}">下一页</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-search" style="font-size: 4rem; color: #ccc;"></i>
+            <p class="mt-3 text-muted">未找到相关文章</p>
+            <a href="{{ url_for('client.index') }}" class="btn btn-primary">返回首页</a>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-search" style="font-size: 4rem; color: #ccc;"></i>
+        <p class="mt-3 text-muted">请输入搜索关键词</p>
+    </div>
+{% endif %}
+{% endblock %}

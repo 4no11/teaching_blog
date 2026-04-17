@@ -1,0 +1,31 @@
+{% extends "client/base.html" %}
+
+{% block title %}登录 - 师备云{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body p-5">
+                <h3 class="text-center mb-4"><i class="bi bi-box-arrow-in-right"></i> 登录</h3>
+                
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">登录</button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('client.index') }}" class="text-muted">返回首页</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

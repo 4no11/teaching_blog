@@ -1,0 +1,47 @@
+{% extends "client/base.html" %}
+
+{% block title %}关于 - 师备云{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4"><i class="bi bi-book"></i> 关于师备云</h2>
+                
+                <div class="mb-4">
+                    <h5>📚 项目简介</h5>
+                    <p>师备云是一个专为教师设计的知识分享平台，旨在帮助教师发布教学笔记、分享教育资源、交流教育心得。</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>✨ 主要功能</h5>
+                    <ul>
+                        <li><strong>📝 教学笔记</strong> - 记录和分享日常教学经验</li>
+                        <li><strong>📚 教育资源</strong> - 上传和分享优质教学资源</li>
+                        <li><strong>💡 教育心得</strong> - 交流教育理念和方法</li>
+                        <li><strong>🤖 AI助手</strong> - 集成大模型，智能辅助教学</li>
+                        <li><strong>💬 评论互动</strong> - 读者评论和互动交流</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>🛠️ 技术栈</h5>
+                    <ul>
+                        <li>后端: Flask + Python</li>
+                        <li>模板: Jinja2</li>
+                        <li>数据库: MySQL</li>
+                        <li>前端: Bootstrap 5</li>
+                        <li>AI集成: OpenAI API / 兼容接口</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    本系统使用简单，界面友好，适合各类教育工作者使用。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1185 @@
+{% extends "client/base.html" %}
+
+{% block title %}国际教育趋势 - 师备云{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="hero-section position-relative overflow-hidden">
+            <div class="hero-background"></div>
+            <div class="hero-content position-relative">
+                <div class="hero-icon">
+                    <i class="bi bi-globe2"></i>
+                </div>
+                <h1 class="hero-title">
+                    <span class="gradient-text">国际教育趋势</span>
+                </h1>
+                <p class="hero-subtitle">
+                    <i class="bi bi-lightning-charge"></i>
+                    追踪全球教育前沿动态，了解国际教育改革趋势
+                </p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ news_items.total if news_items.items else 0 }}</div>
+                        <div class="stat-label">最新资讯</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ topics|length }}</div>
+                        <div class="stat-label">热门主题</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ sources|length }}</div>
+                        <div class="stat-label">权威来源</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <div class="section-title">
+                <i class="bi bi-newspaper"></i>
+                <span>最新资讯</span>
+                <div class="section-indicator"></div>
+            </div>
+            <div class="section-actions">
+                <button class="btn btn-refresh" onclick="refreshNews()">
+                    <span class="btn-icon">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </span>
+                    <span class="btn-text">刷新资讯</span>
+                </button>
+            </div>
+        </div>
+
+        {% if news_items.items %}
+            {% for news in news_items.items %}
+            <article class="news-card" onclick="window.open('{{ news.source_url }}', '_blank')" style="cursor: pointer;">
+                <div class="news-card-header">
+                    <div class="news-source">
+                        <div class="source-icon">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <div class="source-info">
+                            <span class="source-name">{{ news.source_name }}</span>
+                            {% if news.country %}
+                            <span class="source-country">
+                                {% if news.country == 'United States' %}
+                                    🇺🇸 美国
+                                {% elif news.country == 'United Kingdom' %}
+                                    🇬🇧 英国
+                                {% elif news.country == 'International' %}
+                                    🌍 国际
+                                {% else %}
+                                    🌐 {{ news.country }}
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="news-meta">
+                        <span class="fetch-time">
+                            <i class="bi bi-clock"></i>
+                            {{ news.fetched_at.strftime('%m-%d %H:%M') }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="news-card-body">
+                    <h3 class="news-title">{{ news.title }}</h3>
+                    {% if news.content %}
+                    <p class="news-excerpt">{{ news.content[:180] }}...</p>
+                    {% endif %}
+                    
+                    <div class="news-footer">
+                        <div class="news-tags">
+                            {% if news.topic %}
+                            <span class="tag tag-primary">
+                                <i class="bi bi-tag"></i>
+                                {{ news.topic }}
+                            </span>
+                            {% endif %}
+                            {% if news.organization %}
+                            <span class="tag tag-secondary">
+                                <i class="bi bi-building"></i>
+                                {{ news.organization }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="news-actions">
+                            <span class="read-action">
+                                <i class="bi bi-box-arrow-up-right"></i>
+                                阅读原文
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {% if news.publish_date %}
+                    <div class="publish-date">
+                        <i class="bi bi-calendar3"></i>
+                        发布于 {{ news.publish_date.strftime('%Y年%m月%d日') }}
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+            {% endfor %}
+
+            {% if news_items.pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if news_items.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('client.international_news', page=news_items.prev_num) }}">上一页</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in range(1, news_items.pages + 1) %}
+                    <li class="page-item {% if page_num == news_items.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('client.international_news', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if news_items.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('client.international_news', page=news_items.next_num) }}">下一页</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+        <div class="empty-state text-center">
+            <i class="bi bi-inbox text-muted"></i>
+            <p class="text-muted mt-3">暂无国际教育资讯</p>
+            <button class="btn btn-primary" onclick="refreshNews()">
+                <i class="bi bi-arrow-clockwise"></i> 立即获取资讯
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h6 class="sidebar-title">
+                    <i class="bi bi-funnel"></i>
+                    <span>按来源筛选</span>
+                </h6>
+                <div class="filter-group">
+                    <a href="{{ url_for('client.international_news') }}" class="filter-btn {% if not selected_source %}active{% endif %}">
+                        <span class="filter-icon">🌐</span>
+                        <span class="filter-text">全部来源</span>
+                        <span class="filter-count">{{ news_items.total }}</span>
+                    </a>
+                    {% for source in sources %}
+                    <a href="{{ url_for('client.international_news', source=source.source_name) }}"
+                       class="filter-btn {% if selected_source == source.source_name %}active{% endif %}">
+                        <span class="filter-icon">📰</span>
+                        <span class="filter-text">{{ source.source_name }}</span>
+                        <span class="filter-count">{{ source.count if source.count else 0 }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h6 class="sidebar-title">
+                    <i class="bi bi-tags"></i>
+                    <span>按主题筛选</span>
+                </h6>
+                <div class="filter-group">
+                    <a href="{{ url_for('client.international_news') }}" class="filter-btn {% if not selected_topic %}active{% endif %}">
+                        <span class="filter-icon">🏷️</span>
+                        <span class="filter-text">全部主题</span>
+                        <span class="filter-count">{{ news_items.total }}</span>
+                    </a>
+                    {% for topic in topics %}
+                    <a href="{{ url_for('client.international_news', topic=topic.name) }}"
+                       class="filter-btn {% if selected_topic == topic.name %}active{% endif %}">
+                        <span class="filter-icon">📚</span>
+                        <span class="filter-text">{{ topic.name }}</span>
+                        <span class="filter-count">{{ topic.count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h6 class="sidebar-title">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <span>精选推荐</span>
+                </h6>
+                {% if featured_news %}
+                    {% for item in featured_news %}
+                    <div class="featured-item" onclick="window.open('{{ item.source_url }}', '_blank')" style="cursor: pointer;">
+                        <div class="featured-header">
+                            <span class="featured-flag">
+                                {% if item.country == 'United States' %}
+                                    🇺🇸
+                                {% elif item.country == 'United Kingdom' %}
+                                    🇬🇧
+                                {% else %}
+                                    🌍
+                                {% endif %}
+                            </span>
+                            <span class="featured-source">{{ item.source_name }}</span>
+                        </div>
+                        <div class="featured-title">{{ item.title[:60] }}...</div>
+                        <div class="featured-meta">
+                            <i class="bi bi-calendar"></i>
+                            {{ item.publish_date.strftime('%m月%d日') if item.publish_date else '近期' }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-featured">
+                    <i class="bi bi-inbox"></i>
+                    <p>暂无精选内容</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="sidebar-section">
+                <h6 class="sidebar-title">
+                    <i class="bi bi-database"></i>
+                    <span>数据来源</span>
+                </h6>
+                <div class="data-sources">
+                    <div class="source-item">
+                        <span class="source-icon">🌐</span>
+                        <span class="source-name">UNESCO</span>
+                        <span class="source-type">国际组织</span>
+                    </div>
+                    <div class="source-item">
+                        <span class="source-icon">📊</span>
+                        <span class="source-name">OECD</span>
+                        <span class="source-type">国际组织</span>
+                    </div>
+                    <div class="source-item">
+                        <span class="source-icon">🏦</span>
+                        <span class="source-name">World Bank</span>
+                        <span class="source-type">国际组织</span>
+                    </div>
+                    <div class="source-item">
+                        <span class="source-icon">📰</span>
+                        <span class="source-name">Education Week</span>
+                        <span class="source-type">教育媒体</span>
+                    </div>
+                    <div class="source-item">
+                        <span class="source-icon">🔬</span>
+                        <span class="source-name">Nature</span>
+                        <span class="source-type">学术期刊</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* 英雄区域样式 */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.hero-content {
+    z-index: 2;
+}
+
+.hero-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #fff, #f0f8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.5rem;
+}
+
+/* 区域标题样式 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+}
+
+.section-title i {
+    font-size: 1.5rem;
+    color: #667eea;
+}
+
+.section-title span {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.section-indicator {
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    margin-left: 1rem;
+}
+
+.section-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-refresh:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+}
+
+.btn-icon i {
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 新闻卡片样式 */
+.news-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.news-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.news-card:hover::before {
+    opacity: 1;
+}
+
+.news-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.news-source {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.source-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.source-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.source-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.source-country {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.news-meta {
+    display: flex;
+    align-items: center;
+}
+
+.fetch-time {
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.news-card-body {
+    position: relative;
+}
+
+.news-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+    transition: color 0.3s ease;
+}
+
+.news-card:hover .news-title {
+    color: #667eea;
+}
+
+.news-excerpt {
+    color: #6c757d;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.news-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.news-tags {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tag-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.tag-secondary {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+}
+
+.tag:hover {
+    transform: translateY(-1px);
+}
+
+.news-actions {
+    display: flex;
+    align-items: center;
+}
+
+.read-action {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #667eea;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.read-action:hover {
+    color: #764ba2;
+    transform: translateX(4px);
+}
+
+.publish-date {
+    position: absolute;
+    bottom: 1rem;
+    right: 2rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.7;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.sidebar h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.sidebar .btn {
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar .btn:hover {
+    transform: translateY(-1px);
+}
+
+.featured-item {
+    padding: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    border: 1px solid #f0f0f0;
+}
+
+.featured-item:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* 分页样式 */
+.pagination {
+    margin-top: 3rem;
+}
+
+.page-link {
+    border-radius: 12px;
+    margin: 0 0.25rem;
+    border: none;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* 空状态样式 */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 16px;
+    margin: 2rem 0;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hero-stats {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .news-card {
+        padding: 1.5rem;
+    }
+    
+    .news-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .publish-date {
+        position: static;
+        margin-top: 1rem;
+    }
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 侧边栏样式 */
+.sidebar-section {
+    margin-bottom: 2.5rem;
+}
+
+.sidebar-section:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.sidebar-title i {
+    color: #667eea;
+    font-size: 1.2rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #6c757d;
+    background: #f8f9fa;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.filter-btn:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+    color: #495057;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.filter-icon {
+    font-size: 1.1rem;
+    min-width: 20px;
+}
+
+.filter-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.filter-count {
+    background: rgba(0,0,0,0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+}
+
+.filter-btn.active .filter-count {
+    background: rgba(255,255,255,0.2);
+}
+
+/* 精选推荐样式 */
+.featured-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.featured-item:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.featured-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.featured-flag {
+    font-size: 1.2rem;
+}
+
+.featured-source {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.featured-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.empty-featured {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.empty-featured i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.empty-featured p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 数据来源样式 */
+.data-sources {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.source-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.source-item:hover {
+    background: #e9ecef;
+    transform: translateX(2px);
+}
+
+.source-icon {
+    font-size: 1.1rem;
+    min-width: 20px;
+}
+
+.source-name {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.source-type {
+    font-size: 0.8rem;
+    color: #6c757d;
+    background: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+        min-height: 250px;
+    }
+    
+    .gradient-text {
+        font-size: 2rem;
+    }
+    
+    .hero-stats {
+        gap: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .filter-btn {
+        padding: 0.75rem 1rem;
+    }
+    
+    .featured-item {
+        padding: 1rem;
+    }
+    
+    .source-item {
+        padding: 0.625rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 刷新资讯功能
+async function refreshNews() {
+    const refreshBtn = document.querySelector('.btn-refresh');
+    const originalContent = refreshBtn.innerHTML;
+    
+    try {
+        // 显示加载状态
+        refreshBtn.innerHTML = `
+            <span class="btn-icon">
+                <div class="loading"></div>
+            </span>
+            <span class="btn-text">正在获取...</span>
+        `;
+        refreshBtn.disabled = true;
+        
+        const response = await fetch('/api/international-news/refresh', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // 显示成功消息
+            showNotification(`成功获取 ${data.count} 条新资讯！`, 'success');
+            
+            // 延迟刷新页面
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showNotification('获取资讯失败，请稍后重试', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('网络错误，请检查网络连接', 'error');
+    } finally {
+        // 恢复按钮状态
+        refreshBtn.innerHTML = originalContent;
+        refreshBtn.disabled = false;
+    }
+}
+
+// 显示通知消息
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 显示动画
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // 自动隐藏
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// 新闻卡片悬停效果
+document.addEventListener('DOMContentLoaded', function() {
+    const newsCards = document.querySelectorAll('.news-card');
+    
+    newsCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // 添加滚动动画
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    newsCards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+});
+</script>
+
+<style>
+/* 通知消息样式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 1rem 1.5rem;
+    min-width: 300px;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    border-left: 4px solid #667eea;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.notification-content i {
+    font-size: 1.2rem;
+}
+
+.notification-success {
+    border-left-color: #28a745;
+}
+
+.notification-success i {
+    color: #28a745;
+}
+
+.notification-error {
+    border-left-color: #dc3545;
+}
+
+.notification-error i {
+    color: #dc3545;
+}
+
+.notification-info {
+    border-left-color: #17a2b8;
+}
+
+.notification-info i {
+    color: #17a2b8;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        transform: translateY(-100px);
+    }
+    
+    .notification.show {
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}

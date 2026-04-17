@@ -1,0 +1,323 @@
+{% extends "client/base.html" %}
+
+{% block title %}{{ post.title }} - 师备云{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('client.index') }}">首页</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('client.category', slug=post.category.slug) }}">{{ post.category.name }}</a></li>
+        <li class="breadcrumb-item active">{{ post.title[:20] }}...</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-lg-8">
+        <article class="card">
+            {% if post.cover_image %}
+            <div class="cover-image-container">
+                <img src="{{ post.cover_image }}" class="cover-image" alt="{{ post.title }}">
+                <div class="cover-overlay"></div>
+            </div>
+            {% endif %}
+            <div class="card-body p-4">
+                <span class="badge bg-primary mb-3">
+                    {% if post.post_type == 'note' %}📝 教学笔记
+                    {% elif post.post_type == 'resource' %}📚 教育资源
+                    {% else %}💡 教育心得{% endif %}
+                </span>
+                
+                <h1 class="card-title mb-3">{{ post.title }}</h1>
+                
+                <div class="d-flex justify-content-between align-items-center text-muted mb-4">
+                    <span><i class="bi bi-person"></i> {{ post.author.username }}</span>
+                    <span><i class="bi bi-calendar"></i> {{ post.created_at.strftime('%Y年%m月%d日') }}</span>
+                    <span><i class="bi bi-eye"></i> {{ post.views }} 次阅读</span>
+                    <div class="d-flex gap-2">
+                        {% if session.get('user_id') and post.author_id != session.get('user_id') %}
+                        <button class="btn btn-sm {{ 'btn-primary' if is_following else 'btn-outline-primary' }}" id="followBtn" onclick="toggleFollow({{ post.author_id }})">
+                            <i class="{{ 'bi bi-heart-fill' if is_following else 'bi bi-heart' }}"></i>
+                            <span id="followText">{{ '已关注' if is_following else '关注作者' }}</span>
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-sm {{ 'btn-warning' if is_favorited else 'btn-outline-warning' }}" id="favoriteBtn" onclick="toggleFavorite({{ post.id }})">
+                            <i class="{{ 'bi bi-star-fill' if is_favorited else 'bi bi-star' }}"></i>
+                            <span id="favoriteText">{{ '已收藏' if is_favorited else '收藏' }}</span>
+                        </button>
+                    </div>
+                </div>
+                
+                {% if post.summary %}
+                <div class="alert alert-light mb-4">
+                    <i class="bi bi-info-circle"></i> {{ post.summary }}
+                </div>
+                {% endif %}
+                
+                <div class="post-content">
+                    {{ post.content | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+        </article>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title mb-4"><i class="bi bi-chat-dots"></i> 评论 ({{ comments|length }})</h5>
+                
+                {% if session.get('user_id') %}
+                <form action="{{ url_for('client.add_comment', post_id=post.id) }}" method="post" class="mb-4" id="commentForm">
+                    <input type="hidden" name="parent_id" id="parentId" value="">
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="3" placeholder="写下你的评论..." required id="commentContent"></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">发表评论</button>
+                        <button type="button" class="btn btn-outline-secondary" id="cancelReply" style="display:none;" onclick="cancelReply()">取消回复</button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i> 请先 <a href="{{ url_for('client.login', next=url_for('client.post_detail', slug=post.slug)) }}">登录</a> 后才能发表评论，没有账号？<a href="{{ url_for('client.register') }}">立即注册</a>
+                </div>
+                {% endif %}
+                
+                <div class="comments-list">
+                    {% for comment in comments %}
+                        {% if not comment.parent_id %}
+                        <div class="comment-item" id="comment-{{ comment.id }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:36px;height:36px;">
+                                        <i class="bi bi-person text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ comment.user.username }}</strong>
+                                        {% if comment.user.is_admin %}
+                                            <span class="badge bg-danger ms-1">作者</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <p class="mt-2 mb-2 comment-text">{{ comment.content }}</p>
+                            <div class="comment-actions">
+                                {% if session.get('user_id') %}
+                                    <button class="btn btn-sm btn-link text-muted p-0" onclick="replyTo({{ comment.id }}, '{{ comment.user.username }}')">
+                                        <i class="bi bi-reply"></i> 回复
+                                    </button>
+                                {% endif %}
+                            </div>
+                            
+                            {% set replies = comment.replies %}
+                            {% if replies %}
+                                <div class="replies mt-3 ps-4 border-start">
+                                    {% for reply in replies %}
+                                        <div class="reply-item mb-2" id="comment-{{ reply.id }}">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;">
+                                                        <i class="bi bi-person text-white small"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{{ reply.user.username }}</strong>
+                                                        <span class="text-muted">回复</span>
+                                                        <strong>{{ comment.user.username }}</strong>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">{{ reply.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                            </div>
+                                            <p class="mt-1 mb-1 comment-text">{{ reply.content }}</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <hr class="my-3">
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-chat-dots" style="font-size:2rem;"></i>
+                            <p class="mt-2">暂无评论，快来抢沙发~</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="sidebar mb-4">
+            <h5 class="mb-3"><i class="bi bi-folder"></i> 文章分类</h5>
+            <div class="list-group list-group-flush">
+                {% for category in categories %}
+                    <a href="{{ url_for('client.category', slug=category.slug) }}" class="list-group-item category-item">
+                        {{ category.name }}
+                        <span class="float-end text-muted">{{ category.posts.count() }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <h5 class="mb-3"><i class="bi bi-tags"></i> 文章标签</h5>
+            <div>
+                <span class="badge bg-secondary me-1">{{ post.category.name }}</span>
+                <span class="badge bg-secondary">{{ post.post_type }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let readStartTime = Date.now();
+let readDuration = 0;
+let isRecording = false;
+
+function startRecording() {
+    if (isRecording || !{{ 'true' if session.get('user_id') else 'false' }}) return;
+    isRecording = true;
+    readStartTime = Date.now();
+}
+
+function stopRecording() {
+    if (!isRecording) return;
+    readDuration = Math.floor((Date.now() - readStartTime) / 1000);
+    isRecording = false;
+    return readDuration;
+}
+
+async function recordReadingHistory(postId, duration) {
+    try {
+        await fetch('/api/reading-history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                read_duration: duration
+            })
+        });
+    } catch (error) {
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    startRecording();
+    
+    const postId = {{ post.id }};
+    
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') {
+            const duration = stopRecording();
+            if (duration > 5) {
+                recordReadingHistory(postId, duration);
+            }
+        } else if (document.visibilityState === 'visible') {
+            startRecording();
+        }
+    });
+    
+    window.addEventListener('beforeunload', function() {
+        const duration = stopRecording();
+        if (duration > 5) {
+            navigator.sendBeacon('/api/reading-history', JSON.stringify({
+                post_id: postId,
+                read_duration: duration
+            }));
+        }
+    });
+    
+    setInterval(function() {
+        if (isRecording) {
+            const currentDuration = Math.floor((Date.now() - readStartTime) / 1000);
+            if (currentDuration >= 30) {
+                recordReadingHistory(postId, currentDuration);
+                readStartTime = Date.now();
+            }
+        }
+    }, 30000);
+});
+
+function replyTo(commentId, username) {
+    document.getElementById('parentId').value = commentId;
+    document.getElementById('commentContent').placeholder = '回复 @' + username + '：';
+    document.getElementById('commentContent').focus();
+    document.getElementById('submitBtn').textContent = '回复';
+    document.getElementById('cancelReply').style.display = 'block';
+    document.getElementById('commentContent').scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function cancelReply() {
+    document.getElementById('parentId').value = '';
+    document.getElementById('commentContent').placeholder = '写下你的评论...';
+    document.getElementById('submitBtn').textContent = '发表评论';
+    document.getElementById('cancelReply').style.display = 'none';
+}
+
+async function toggleFollow(authorId) {
+    const btn = document.getElementById('followBtn');
+    const icon = btn.querySelector('i');
+    const text = document.getElementById('followText');
+
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/follows', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                author_id: authorId
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'followed') {
+            btn.className = 'btn btn-sm btn-primary';
+            icon.className = 'bi bi-heart-fill';
+            text.textContent = '已关注';
+        } else if (data.status === 'unfollowed') {
+            btn.className = 'btn btn-sm btn-outline-primary';
+            icon.className = 'bi bi-heart';
+            text.textContent = '关注作者';
+        }
+    } catch (error) {
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function toggleFavorite(postId) {
+    const btn = document.getElementById('favoriteBtn');
+    const icon = btn.querySelector('i');
+    const text = document.getElementById('favoriteText');
+
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/favorites/${postId}`, {
+            method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'added') {
+            btn.className = 'btn btn-sm btn-warning';
+            icon.className = 'bi bi-star-fill';
+            text.textContent = '已收藏';
+        } else if (data.status === 'removed') {
+            btn.className = 'btn btn-sm btn-outline-warning';
+            icon.className = 'bi bi-star';
+            text.textContent = '收藏';
+        }
+    } catch (error) {
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}
