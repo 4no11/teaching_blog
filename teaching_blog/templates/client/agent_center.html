@@ -1,0 +1,190 @@
+{% extends "client/base.html" %}
+
+{% block title %}智能体中心 - 教学博客{% endblock %}
+
+{% block styles %}
+<style>
+    .agent-card {
+        border-radius: 20px !important;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+        cursor: pointer;
+    }
+
+    .agent-card:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25) !important;
+    }
+
+    .agent-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transition: all 0.3s ease;
+    }
+
+    .agent-card:hover .agent-icon-wrapper {
+        transform: scale(1.1);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .agent-card:hover .agent-icon-wrapper i {
+        color: white !important;
+    }
+
+    .agent-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .agent-desc {
+        font-size: 0.9rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 60px 40px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 60%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(15deg);
+        pointer-events: none;
+    }
+
+    .page-header h1 {
+        color: white;
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .page-header p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 1.1rem;
+        max-width: 600px;
+    }
+
+    .header-icon {
+        position: absolute;
+        opacity: 0.1;
+        font-size: 15rem;
+        right: 40px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="page-header position-relative">
+            <i class="bi bi-robot header-icon text-white"></i>
+            <h1><i class="bi bi-cpu me-3"></i>智能体中心</h1>
+            <p>用AI赋能教学，让科研创作简单高效。探索多种智能工具，提升教学效率与质量。</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.location.href='{{ url_for('client.lesson_planner') }}'">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-mortarboard-fill fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">AI链式备课</h5>
+            <p class="agent-desc">AI智能分析教材内容，生成结构化教学方案，包含教学目标、重难点分析、教学过程设计等。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.open('http://localhost:3000', '_blank')">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-robot fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">AI课堂</h5>
+            <p class="agent-desc">沉浸式AI互动课堂，支持幻灯片、测验、交互式模拟、PBL项目制学习等多种教学形式。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.location.href='{{ url_for('client.courseware_optimizer') }}'">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-magic fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">课件优化</h5>
+            <p class="agent-desc">智能分析课件内容，提供优化建议，提升课件视觉效果与教学效果。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.location.href='{{ url_for('client.international_news') }}'">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-globe fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">国际动态</h5>
+            <p class="agent-desc">实时获取国际教育前沿资讯，了解全球教育发展趋势，拓展国际视野。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.location.href='{{ url_for('client.post_type', post_type='note') }}'">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-journal-text fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">教学笔记</h5>
+            <p class="agent-desc">记录和分享教学笔记、教育资源与教育心得，交流教学方法，沉淀教学经验，共同成长进步。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card agent-card h-100 text-center p-4" onclick="window.location.href='{{ url_for('client.learning_progress') }}'">
+            <div class="agent-icon-wrapper">
+                <i class="bi bi-bar-chart-line fs-2 text-primary"></i>
+            </div>
+            <h5 class="agent-title">进度管理</h5>
+            <p class="agent-desc">通过NLP分析学生理解程度，自动定位未理解内容，提供进度可视化和学习节奏调整建议。</p>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-arrow-right me-1"></i>立即使用
+            </span>
+        </div>
+    </div>
+</div>
+{% endblock %}

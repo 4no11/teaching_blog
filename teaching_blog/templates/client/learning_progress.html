@@ -1,0 +1,721 @@
+{% extends "client/base.html" %}
+
+{% block title %}学习进度管理 - 教学博客{% endblock %}
+
+{% block styles %}
+<style>
+    .progress-card {
+        border-radius: 16px !important;
+        overflow: hidden;
+        transition: all 0.3s ease !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .progress-card:hover {
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15) !important;
+    }
+
+    .progress-bar {
+        height: 8px;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .learning-path {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .learning-node {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .learning-node::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 40px;
+        bottom: -30px;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+
+    .learning-node:last-child::before {
+        display: none;
+    }
+
+    .node-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        margin-right: 20px;
+    }
+
+    .node-content {
+        flex: 1;
+    }
+
+    .node-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .node-progress {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .difficult-card {
+        border-left: 4px solid #f8f9fa;
+    }
+
+    .completed-card {
+        border-left: 4px solid #28a745;
+    }
+
+    .in-progress-card {
+        border-left: 4px solid #ffc107;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+    }
+
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .strength-indicator {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .strength-strong {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .strength-weak {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="page-header position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 24px; padding: 60px 40px; margin-bottom: 40px; position: relative; overflow: hidden;">
+            <i class="bi bi-activity header-icon text-white"></i>
+            <h1><i class="bi bi-bar-chart-line me-3"></i>学习进度管理</h1>
+            <p>实时跟踪学习进度，智能分析理解程度，提供个性化学习建议。</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 进度概览 -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">已完成内容</h5>
+                    <span class="badge bg-success rounded-pill" id="completed-count">0</span>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-success" role="progressbar" id="completed-progress" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="text-sm text-muted" id="completed-text">0/0 个节点</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">待理解内容</h5>
+                    <span class="badge bg-danger rounded-pill" id="difficult-count">0</span>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-danger" role="progressbar" id="difficult-progress" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="text-sm text-muted" id="difficult-text">0/0 个节点</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6">
+        <div class="card progress-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title">总学习时间</h5>
+                    <span class="badge bg-primary rounded-pill" id="total-time">0 分钟</span>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <p class="text-sm text-muted">持续学习中</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- 学习路径 -->
+    <div class="col-lg-12">
+        <div class="card progress-card">
+            <div class="card-header">
+                <h5 class="card-title">学习路径</h5>
+            </div>
+            <div class="card-body">
+                <div id="learning-path" class="learning-path">
+                    <!-- 学习节点将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- 未理解内容 -->
+    <div class="col-lg-12">
+        <div class="card progress-card">
+            <div class="card-header">
+                <h5 class="card-title">需要加强的内容</h5>
+            </div>
+            <div class="card-body">
+                <div id="difficult-content" class="d-flex flex-wrap gap-3">
+                    <!-- 困难内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- 学习数据分析 -->
+    <div class="col-lg-12">
+        <div class="card progress-card">
+            <div class="card-header">
+                <h5 class="card-title">学习数据分析</h5>
+            </div>
+            <div class="card-body">
+                <!-- 知识和技能基础 -->
+                <div class="mb-6">
+                    <div class="chart-title">知识和技能基础</div>
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="knowledgeSkillsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 认知和实践能力 -->
+                <div class="mb-6">
+                    <div class="chart-title">认知和实践能力</div>
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="cognitiveSkillsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 学习特点 -->
+                <div class="mb-6">
+                    <div class="chart-title">学习特点</div>
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="learningFeaturesChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 学习进度趋势 -->
+                <div>
+                    <div class="chart-title">学习进度趋势</div>
+                    <div class="chart-container" style="height: 500px;">
+                        <canvas id="progressTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-4">
+    <!-- 学习节奏调整建议 -->
+    <div class="col-lg-12">
+        <div class="card progress-card">
+            <div class="card-header">
+                <h5 class="card-title">学习节奏建议</h5>
+            </div>
+            <div class="card-body">
+                <div id="rhythm-suggestions" class="prose">
+                    <!-- 建议将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 获取用户ID（实际应用中从登录状态获取）
+const userId = 1;
+
+// 确保用户存在
+async function ensureUserExists() {
+    try {
+        const response = await fetch('/api/ai/ensure-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('确保用户存在失败:', error);
+        return false;
+    }
+}
+
+// 页面加载时获取数据
+document.addEventListener('DOMContentLoaded', async () => {
+    // 确保用户存在
+    const userExists = await ensureUserExists();
+    if (!userExists) {
+        console.error('用户不存在，无法加载学习进度');
+        return;
+    }
+    
+    await loadContentNodes();
+    await loadProgressData();
+    await loadDifficultNodes();
+    await loadRhythmSuggestions();
+});
+
+// 加载进度数据
+async function loadProgressData() {
+    try {
+        const response = await fetch('/api/ai/get-learning-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const data = await response.json();
+        if (data.progress) {
+            updateProgressOverview(data.progress);
+            renderLearningPath(data.progress);
+        }
+    } catch (error) {
+        console.error('加载进度数据失败:', error);
+    }
+}
+
+// 更新进度概览
+function updateProgressOverview(progress) {
+    const totalCount = progress.length;
+    const completedCount = progress.filter(p => p.completed).length;
+    const difficultCount = progress.filter(p => p.comprehension_level < 60).length;
+    const totalTime = Math.round(progress.reduce((sum, p) => sum + p.time_spent, 0) / 60);
+    
+    document.getElementById('completed-count').textContent = completedCount;
+    document.getElementById('completed-progress').style.width = `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%`;
+    document.getElementById('completed-progress').setAttribute('aria-valuenow', completedCount);
+    document.getElementById('completed-text').textContent = `${completedCount}/${totalCount} 个节点`;
+    
+    document.getElementById('difficult-count').textContent = difficultCount;
+    document.getElementById('difficult-progress').style.width = `${totalCount > 0 ? (difficultCount / totalCount) * 100 : 0}%`;
+    document.getElementById('difficult-progress').setAttribute('aria-valuenow', difficultCount);
+    document.getElementById('difficult-text').textContent = `${difficultCount}/${totalCount} 个节点`;
+    
+    document.getElementById('total-time').textContent = `${totalTime} 分钟`;
+}
+
+// 渲染学习路径
+function renderLearningPath(progress) {
+    const container = document.getElementById('learning-path');
+    container.innerHTML = '';
+    
+    // 按层级和排序索引排序
+    progress.sort((a, b) => {
+        if (a.level !== b.level) return a.level - b.level;
+        return a.order_index - b.order_index;
+    });
+    
+    progress.forEach(item => {
+        const node = document.createElement('div');
+        node.className = 'learning-node';
+        
+        let iconClass = 'bg-gray-200 text-gray-600';
+        let cardClass = 'in-progress-card';
+        
+        if (item.completed) {
+            iconClass = 'bg-success text-white';
+            cardClass = 'completed-card';
+        } else if (item.comprehension_level < 60) {
+            iconClass = 'bg-light text-gray-600 border border-gray-300';
+            cardClass = 'difficult-card';
+        }
+        
+        node.innerHTML = `
+            <div class="node-icon ${iconClass}">
+                ${item.completed ? '✓' : item.comprehension_level < 60 ? '!' : '○'}
+            </div>
+            <div class="node-content ${cardClass}">
+                <div class="node-title">${item.title}</div>
+                <div class="node-progress">
+                    理解程度: ${item.comprehension_level}% | 学习时间: ${Math.round(item.time_spent / 60)} 分钟 | 最后学习: ${new Date(item.last_accessed).toLocaleString()}
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(node);
+    });
+}
+
+// 加载困难节点
+async function loadDifficultNodes() {
+    try {
+        const response = await fetch('/api/ai/locate-difficult-nodes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const data = await response.json();
+        if (data.difficult_nodes) {
+            renderDifficultNodes(data.difficult_nodes);
+        }
+    } catch (error) {
+        console.error('加载困难节点失败:', error);
+    }
+}
+
+// 渲染困难节点
+function renderDifficultNodes(nodes) {
+    const container = document.getElementById('difficult-content');
+    container.innerHTML = '';
+    
+    if (nodes.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 flex-1 text-center py-4">暂无需要加强的内容</p>';
+        return;
+    }
+    
+    nodes.forEach(node => {
+        const item = document.createElement('div');
+        item.className = 'p-4 border border-light rounded-lg bg-light flex-shrink-0 w-80';
+        
+        item.innerHTML = `
+            <div class="flex justify-between items-start">
+                <h6 class="font-medium text-gray-800">${node.title}</h6>
+                <span class="bg-light text-gray-800 border border-gray-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                    ${node.comprehension_level}% 理解
+                </span>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+                最后学习: ${new Date(node.last_accessed).toLocaleString()}
+            </p>
+            <p class="text-sm text-gray-600">
+                学习时间: ${Math.round(node.time_spent / 60)} 分钟
+            </p>
+            <button class="mt-3 bg-light hover:bg-gray-100 text-gray-800 border border-gray-300 text-sm font-medium px-4 py-2 rounded" 
+                    onclick="reviewNode(${node.node_id})"><i class="bi bi-arrow-repeat me-1"></i> 重新学习</button>
+        `;
+        
+        container.appendChild(item);
+    });
+}
+
+// 加载学习节奏建议
+async function loadRhythmSuggestions() {
+    try {
+        // 这里可以调用API获取个性化建议
+        // 暂时使用模拟数据
+        const suggestions = `
+            <h5>学习节奏建议</h5>
+            <ul>
+                <li>建议每天学习30-45分钟，保持专注</li>
+                <li>针对未理解的内容，建议增加练习和复习时间</li>
+                <li>学习新内容前，先复习相关的已学知识点</li>
+                <li>每周进行一次综合复习，巩固所学内容</li>
+                <li>根据你的学习进度，建议优先复习以下内容：</li>
+                <ul>
+                    <li>知识点1：理解程度较低，需要重点关注</li>
+                    <li>知识点2：最近学习但理解不深，需要加强</li>
+                </ul>
+            </ul>
+        `;
+        
+        document.getElementById('rhythm-suggestions').innerHTML = suggestions;
+    } catch (error) {
+        console.error('加载学习节奏建议失败:', error);
+    }
+}
+
+// 加载内容节点
+async function loadContentNodes() {
+    try {
+        const response = await fetch('/api/ai/get-content-nodes');
+        const data = await response.json();
+        if (data.nodes && data.nodes.length === 0) {
+            // 如果没有内容节点，创建一些示例节点
+            await createSampleNodes();
+        } else if (data.nodes && data.nodes.length > 0) {
+            // 如果有内容节点，为每个节点创建学习进度记录
+            await createProgressRecords(data.nodes);
+        }
+    } catch (error) {
+        console.error('加载内容节点失败:', error);
+    }
+}
+
+// 创建示例内容节点
+async function createSampleNodes() {
+    const sampleNodes = [
+        { title: '第一章：教育心理学基础', content: '教育心理学的基本概念和理论', level: 1, order_index: 1 },
+        { title: '1.1 教育心理学的定义', content: '教育心理学是研究教育过程中的心理现象和规律的科学', level: 2, order_index: 1 },
+        { title: '1.2 教育心理学的发展历程', content: '从行为主义到认知主义的发展', level: 2, order_index: 2 },
+        { title: '第二章：学习理论', content: '主要的学习理论及其应用', level: 1, order_index: 2 },
+        { title: '2.1 行为主义学习理论', content: '强化、惩罚等概念', level: 2, order_index: 1 },
+        { title: '2.2 认知主义学习理论', content: '信息加工、建构主义等', level: 2, order_index: 2 }
+    ];
+    
+    const createdNodes = [];
+    for (const node of sampleNodes) {
+        const response = await fetch('/api/ai/create-content-node', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(node)
+        });
+        const result = await response.json();
+        if (result.success) {
+            createdNodes.push(result.node);
+        }
+    }
+    
+    // 为创建的节点创建学习进度记录
+    await createProgressRecords(createdNodes);
+    
+    // 重新加载进度数据
+    await loadProgressData();
+}
+
+// 为内容节点创建学习进度记录
+async function createProgressRecords(nodes) {
+    for (const node of nodes) {
+        await fetch('/api/ai/update-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                content_node_id: node.id,
+                completed: false,
+                time_spent: Math.floor(Math.random() * 300) // 随机学习时间
+            })
+        });
+    }
+}
+
+// 重新学习节点
+function reviewNode(nodeId) {
+    // 跳转到学习页面
+    alert(`重新学习节点: ${nodeId}`);
+}
+
+// 初始化图表
+function initCharts(progressData) {
+    // 知识和技能基础图表
+    const knowledgeSkillsCtx = document.getElementById('knowledgeSkillsChart').getContext('2d');
+    new Chart(knowledgeSkillsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['知识点1', '知识点2', '知识点3', '知识点4'],
+            datasets: [{
+                label: '理解程度',
+                data: [85, 65, 45, 90],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // 认知和实践能力图表
+    const cognitiveSkillsCtx = document.getElementById('cognitiveSkillsChart').getContext('2d');
+    new Chart(cognitiveSkillsCtx, {
+        type: 'radar',
+        data: {
+            labels: ['记忆', '理解', '应用', '分析', '评价', '创造'],
+            datasets: [{
+                label: '当前水平',
+                data: [80, 70, 60, 50, 40, 30],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+            }, {
+                label: '目标水平',
+                data: [90, 85, 80, 75, 70, 65],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    angleLines: {
+                        display: true
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+
+    // 学习特点图表
+    const learningFeaturesCtx = document.getElementById('learningFeaturesChart').getContext('2d');
+    new Chart(learningFeaturesCtx, {
+        type: 'line',
+        data: {
+            labels: ['类型1', '类型2', '类型3', '类型4'],
+            datasets: [{
+                label: '系列1',
+                data: [3, 4, 2, 5],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4
+            }, {
+                label: '系列2',
+                data: [2, 3, 4, 3],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.4
+            }, {
+                label: '系列3',
+                data: [1, 2, 3, 4],
+                borderColor: 'rgba(255, 206, 86, 1)',
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // 学习进度趋势图表
+    const progressTrendCtx = document.getElementById('progressTrendChart').getContext('2d');
+    new Chart(progressTrendCtx, {
+        type: 'line',
+        data: {
+            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+            datasets: [{
+                label: '已完成内容',
+                data: [10, 20, 35, 45, 60, 75],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.4
+            }, {
+                label: '理解程度',
+                data: [60, 65, 70, 75, 80, 85],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+// 加载进度数据
+async function loadProgressData() {
+    try {
+        const response = await fetch('/api/ai/get-learning-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const data = await response.json();
+        if (data.progress) {
+            updateProgressOverview(data.progress);
+            renderLearningPath(data.progress);
+            initCharts(data.progress); // 初始化图表
+        }
+    } catch (error) {
+        console.error('加载进度数据失败:', error);
+        // 即使没有数据也初始化图表
+        initCharts([]);
+    }
+}
+</script>
+{% endblock %}
