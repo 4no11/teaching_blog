@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block title %}文章管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">文章管理</h3>
+    <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 发布新文章
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" name="keyword" class="form-control" placeholder="搜索文章..." value="{{ keyword }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search"></i> 搜索
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">标题</th>
+                    <th>分类</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>阅读量</th>
+                    <th>发布时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts.items %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('client.post_detail', slug=post.slug) }}" target="_blank" class="text-decoration-none">
+                            {{ post.title[:40] }}{% if post.title|length > 40 %}...{% endif %}
+                        </a>
+                    </td>
+                    <td>{{ post.category.name }}</td>
+                    <td>
+                        {% if post.post_type == 'note' %}📝 教学笔记
+                        {% elif post.post_type == 'resource' %}📚 教育资源
+                        {% else %}💡 教育心得{% endif %}
+                    </td>
+                    <td>
+                        {% if post.is_published %}
+                            <span class="badge bg-success">已发布</span>
+                        {% else %}
+                            <span class="badge bg-warning">草稿</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ post.views }}</td>
+                    <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_post', id=post.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('admin.delete_post', id=post.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这篇文章吗？')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-5">暂无文章</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if posts.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4">
+                {% if posts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.posts', page=posts.prev_num, keyword=keyword) }}">上一页</a>
+                    </li>
+                {% endif %}
+                {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == posts.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('admin.posts', page=page_num, keyword=keyword) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.posts', page=posts.next_num, keyword=keyword) }}">下一页</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

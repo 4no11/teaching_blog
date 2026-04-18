@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if post %}编辑文章{% else %}发布新文章{% endif %} - 管理后台{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">{% if post %}编辑文章{% else %}发布新文章{% endif %}</h3>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <label class="form-label">标题</label>
+                    <input type="text" name="title" class="form-control" value="{{ post.title if post else '' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">文章类型</label>
+                    <select name="post_type" class="form-select" required>
+                        <option value="note" {% if post and post.post_type == 'note' %}selected{% endif %}>📝 教学笔记</option>
+                        <option value="resource" {% if post and post.post_type == 'resource' %}selected{% endif %}>📚 教育资源</option>
+                        <option value="experience" {% if post and post.post_type == 'experience' %}selected{% endif %}>💡 教育心得</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">分类</label>
+                <select name="category_id" class="form-select" required>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if post and post.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">摘要</label>
+                <textarea name="summary" class="form-control" rows="2" placeholder="简要描述文章内容...">{{ post.summary if post else '' }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">内容</label>
+                <textarea name="content" class="form-control" rows="15" required>{{ post.content if post else '' }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <div class="form-check">
+                    <input type="checkbox" name="is_published" class="form-check-input" id="is_published" {% if post and post.is_published %}checked{% endif %}>
+                    <label class="form-check-label" for="is_published">立即发布</label>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('admin.posts') }}" class="btn btn-secondary">返回</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> {% if post %}保存修改{% else %}发布文章{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

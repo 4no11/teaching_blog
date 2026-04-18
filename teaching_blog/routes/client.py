@@ -769,12 +769,20 @@ def international_news():
 
     return render_template(
         'client/international_news.html',
-        news_items=news_items,
+        news_items=news_items.items,
+        page=news_items.page,
+        total_pages=news_items.pages,
+        total_news=news_items.total,
         topics=topics,
         sources=[{'source_name': s[0]} for s in sources],
         featured_news=featured_news,
         selected_topic=selected_topic,
-        selected_source=selected_source
+        selected_source=selected_source,
+        current_topic=selected_topic,
+        current_source=selected_source,
+        total_topics=len(topics) if topics else 0,
+        total_sources=len(sources) if sources else 0,
+        featured_topics=[{'name': t['name'], 'slug': t['name'].lower().replace(' ', '-'), 'icon': '📚', 'count': InternationalEducation.query.filter_by(topic=t['name'], is_featured=True).count()} for t in (topics[:5] if topics else [])]
     )
 
 @client_bp.route('/api/international-news/refresh', methods=['POST'])

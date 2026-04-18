@@ -1,0 +1,144 @@
+{% extends "admin/base.html" %}
+
+{% block title %}定时任务管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-clock-history"></i> 定时任务管理</h3>
+    <div>
+        {% if status.is_running %}
+            <span class="badge bg-success">
+                <i class="bi bi-check-circle"></i> 运行中
+            </span>
+        {% else %}
+            <span class="badge bg-danger">
+                <i class="bi bi-x-circle"></i> 已停止
+            </span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-task"></i> 定时任务状态</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>当前时间：</strong>{{ status.current_time }}
+                </div>
+                
+                <h6>待执行任务：</h6>
+                {% if status.next_runs %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>任务名称</th>
+                                    <th>下次执行时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in status.next_runs %}
+                                <tr>
+                                    <td>
+                                        {% if 'crawl_news_job' in job.job %}
+                                            <i class="bi bi-globe text-primary"></i> 新闻爬取任务
+                                        {% elif 'cleanup_old_news_job' in job.job %}
+                                            <i class="bi bi-trash text-warning"></i> 清理旧新闻
+                                        {% elif 'update_featured_news_job' in job.job %}
+                                            <i class="bi bi-star text-info"></i> 更新精选新闻
+                                        {% else %}
+                                            {{ job.job }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if job.next_run %}
+                                            <span class="badge bg-light text-dark">{{ job.next_run }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">未知</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 暂无待执行任务
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> 操作控制</h5>
+            </div>
+            <div class="card-body">
+                {% if status.is_running %}
+                    <form method="POST" action="{{ url_for('admin.stop_scheduler') }}" class="mb-3">
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('确定要停止定时任务吗？')">
+                            <i class="bi bi-stop-circle"></i> 停止调度器
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('admin.start_scheduler') }}" class="mb-3">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-play-circle"></i> 启动调度器
+                        </button>
+                    </form>
+                {% endif %}
+                
+                <hr>
+                
+                <form method="POST" action="{{ url_for('admin.trigger_crawl') }}">
+                    <button type="submit" class="btn btn-warning w-100" onclick="return confirm('确定要立即执行新闻爬取吗？')">
+                        <i class="bi bi-arrow-clockwise"></i> 立即爬取新闻
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> 任务说明</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong><i class="bi bi-globe text-primary"></i> 新闻爬取</strong>
+                    <br><small class="text-muted">每4小时自动爬取国际教育资讯</small>
+                </div>
+                <div class="mb-2">
+                    <strong><i class="bi bi-trash text-warning"></i> 清理旧新闻</strong>
+                    <br><small class="text-muted">每天凌晨2点清理30天前的新闻</small>
+                </div>
+                <div>
+                    <strong><i class="bi bi-star text-info"></i> 更新精选</strong>
+                    <br><small class="text-muted">每2小时更新精选新闻推荐</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> 最近执行记录</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    定时任务日志将在这里显示。启动调度器后，任务执行记录会自动更新。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

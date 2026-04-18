@@ -3,62 +3,49 @@
 {% block title %}我的关注 - 师备云{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="text-center mb-2">
-                    <i class="bi bi-heart-fill text-danger"></i> 我的关注
-                </h2>
-                <p class="text-center text-muted">关注你喜欢的作者，及时获取他们的最新文章</p>
-            </div>
+<div class="page-container">
+    <div class="page-header-section">
+        <div class="header-icon-wrapper">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
         </div>
+        <h1 class="page-main-title">我的关注</h1>
+        <p class="page-subtitle">关注你喜欢的作者，及时获取他们的最新文章</p>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <ul class="nav nav-tabs mb-4" id="followTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="following-tab" data-bs-toggle="tab" data-bs-target="#following" type="button" role="tab">
-                            <i class="bi bi-heart-fill"></i> 已关注
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="discover-tab" data-bs-toggle="tab" data-bs-target="#discover" type="button" role="tab">
-                            <i class="bi bi-search"></i> 发现作者
-                        </button>
-                    </li>
-                </ul>
+    <div class="main-content-card">
+        <div class="custom-tabs">
+            <button class="tab-btn active" data-tab="following">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                已关注
+            </button>
+            <button class="tab-btn" data-tab="discover">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                发现作者
+            </button>
+        </div>
 
-                <div class="tab-content" id="followTabsContent">
-                    <div class="tab-pane fade show active" id="following" role="tabpanel">
-                        <div id="followingLoading" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3">加载中...</p>
-                        </div>
+        <div class="tab-content-wrapper">
+            <div id="followingTab" class="tab-panel active">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
 
-                        <div id="followingContent" style="display: none;">
-                            <div class="row" id="followingContainer"></div>
-                        </div>
-                    </div>
+                <div id="followingContent" style="display: none;">
+                    <div class="authors-grid" id="followingContainer"></div>
+                </div>
+            </div>
 
-                    <div class="tab-pane fade" id="discover" role="tabpanel">
-                        <div id="discoverLoading" class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3">加载中...</p>
-                        </div>
+            <div id="discoverTab" class="tab-panel">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>加载中...</p>
+                </div>
 
-                        <div id="discoverContent" style="display: none;">
-                            <div class="row" id="discoverContainer"></div>
-                        </div>
-                    </div>
+                <div id="discoverContent" style="display: none;">
+                    <div class="authors-grid" id="discoverContainer"></div>
                 </div>
             </div>
         </div>
@@ -71,10 +58,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadFollows();
 
-    document.getElementById('discover-tab').addEventListener('shown.bs.tab', function() {
-        if (document.getElementById('discoverContent').style.display === 'none') {
-            loadFollows();
-        }
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const tabId = this.dataset.tab;
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(tabId + 'Tab').classList.add('active');
+
+            if (tabId === 'discover' && document.getElementById('discoverContent').style.display === 'none') {
+                loadFollows();
+            }
+        });
     });
 });
 
@@ -83,29 +81,29 @@ async function loadFollows() {
         const response = await fetch('/api/follows');
         const data = await response.json();
 
-        if (data.error) {
-            return;
-        }
+        if (data.error) return;
 
         renderFollowing(data.following);
         renderDiscover(data.available_authors);
-    } catch (error) {
-    }
+    } catch (error) {}
 }
 
 function renderFollowing(following) {
-    document.getElementById('followingLoading').style.display = 'none';
+    document.querySelector('#followingTab .loading-state').style.display = 'none';
     document.getElementById('followingContent').style.display = 'block';
 
     const container = document.getElementById('followingContainer');
 
     if (following.length === 0) {
         container.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-heart-x" style="font-size: 4rem; color: #ccc;"></i>
-                <p class="mt-3 text-muted">还没有关注任何作者</p>
-                <button class="btn btn-primary" onclick="document.getElementById('discover-tab').click()">
-                    <i class="bi bi-search"></i> 去发现喜欢的作者
+            <div class="empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#90a4ae" stroke-width="1.5">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <h3>还没有关注任何作者</h3>
+                <p>去发现你感兴趣的内容创作者吧</p>
+                <button class="btn-primary-custom" onclick="document.querySelector('[data-tab=\"discover\"]').click()">
+                    发现作者
                 </button>
             </div>
         `;
@@ -115,29 +113,27 @@ function renderFollowing(following) {
     let html = '';
 
     following.forEach(author => {
-        const avatarHtml = author.avatar 
-            ? `<img src="${author.avatar}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" alt="${author.username}">`
-            : `<div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+        const avatarHtml = author.avatar
+            ? `<img src="${author.avatar}" alt="${author.username}">`
+            : `<div class="avatar-placeholder">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                </div>`;
-        
+
         html += `
-            <div class="col-md-4 col-sm-6 mb-3">
-                <div class="card h-100 border-danger">
-                    <div class="card-body text-center">
-                        <div class="mb-3">${avatarHtml}</div>
-                        <h6 class="card-title">${author.username}</h6>
-                        <p class="card-text small text-muted">${author.bio || '暂无个人简介'}</p>
-                        <small class="text-muted">
-                            <i class="bi bi-file-earmark-text"></i> ${author.post_count || 0} 篇文章
-                        </small>
-                        <div class="mt-3">
-                            <button class="btn btn-sm btn-outline-danger" onclick="toggleFollow(${author.author_id}, this)">
-                                <i class="bi bi-heart-fill"></i> 已关注
-                            </button>
-                        </div>
-                    </div>
+            <div class="author-card">
+                <div class="author-avatar">${avatarHtml}</div>
+                <div class="author-info">
+                    <h4>${author.username}</h4>
+                    <p>${author.bio || '暂无个人简介'}</p>
+                    <span class="author-stats">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        ${author.post_count || 0} 篇文章
+                    </span>
                 </div>
+                <button class="btn-follow active" onclick="toggleFollow(${author.author_id}, this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    已关注
+                </button>
             </div>
         `;
     });
@@ -146,16 +142,19 @@ function renderFollowing(following) {
 }
 
 function renderDiscover(authors) {
-    document.getElementById('discoverLoading').style.display = 'none';
+    document.querySelector('#discoverTab .loading-state').style.display = 'none';
     document.getElementById('discoverContent').style.display = 'block';
 
     const container = document.getElementById('discoverContainer');
 
     if (authors.length === 0) {
         container.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-people" style="font-size: 4rem; color: #ccc;"></i>
-                <p class="mt-3 text-muted">暂未发现其他作者</p>
+            <div class="empty-state">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#90a4ae" stroke-width="1.5">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <h3>暂未发现其他作者</h3>
+                <p>稍后再来看看吧</p>
             </div>
         `;
         return;
@@ -164,29 +163,27 @@ function renderDiscover(authors) {
     let html = '';
 
     authors.forEach(author => {
-        const avatarHtml = author.avatar 
-            ? `<img src="${author.avatar}" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;" alt="${author.username}">`
-            : `<div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+        const avatarHtml = author.avatar
+            ? `<img src="${author.avatar}" alt="${author.username}">`
+            : `<div class="avatar-placeholder">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                </div>`;
-        
+
         html += `
-            <div class="col-md-4 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-3">${avatarHtml}</div>
-                        <h6 class="card-title">${author.username}</h6>
-                        <p class="card-text small text-muted">${author.bio || '暂无个人简介'}</p>
-                        <small class="text-muted">
-                            <i class="bi bi-file-earmark-text"></i> ${author.post_count || 0} 篇文章
-                        </small>
-                        <div class="mt-3">
-                            <button class="btn btn-sm btn-outline-primary" onclick="toggleFollow(${author.id}, this)">
-                                <i class="bi bi-plus-lg"></i> 关注
-                            </button>
-                        </div>
-                    </div>
+            <div class="author-card">
+                <div class="author-avatar">${avatarHtml}</div>
+                <div class="author-info">
+                    <h4>${author.username}</h4>
+                    <p>${author.bio || '暂无个人简介'}</p>
+                    <span class="author-stats">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        ${author.post_count || 0} 篇文章
+                    </span>
                 </div>
+                <button class="btn-follow" onclick="toggleFollow(${author.id}, this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    关注
+                </button>
             </div>
         `;
     });
@@ -196,40 +193,29 @@ function renderDiscover(authors) {
 
 async function toggleFollow(authorId, button) {
     const originalText = button.innerHTML;
-    const originalClass = button.className;
 
     button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    button.innerHTML = '<div class="btn-loading"></div>';
 
     try {
         const response = await fetch('/api/follows', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                author_id: authorId
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ author_id: authorId })
         });
 
         const data = await response.json();
 
         if (data.status === 'followed') {
-            button.className = 'btn btn-sm btn-outline-danger';
-            button.innerHTML = '<i class="bi bi-heart-fill"></i> 已关注';
+            button.classList.add('active');
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>已关注';
             showToast('关注成功', 'success');
-            
-            setTimeout(() => {
-                loadFollows();
-            }, 1000);
+            setTimeout(() => loadFollows(), 1000);
         } else if (data.status === 'unfollowed') {
-            button.className = 'btn btn-sm btn-outline-primary';
-            button.innerHTML = '<i class="bi bi-plus-lg"></i> 关注';
+            button.classList.remove('active');
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>关注';
             showToast('已取消关注', 'info');
-            
-            setTimeout(() => {
-                loadFollows();
-            }, 1000);
+            setTimeout(() => loadFollows(), 1000);
         }
     } catch (error) {
         button.innerHTML = originalText;
@@ -239,53 +225,424 @@ async function toggleFollow(authorId, button) {
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-bg-${type} border-0 position-fixed bottom-0 end-0 m-3`;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
+    toast.className = `custom-toast toast-${type}`;
     toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        <div class="toast-content">
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()">×</button>
         </div>
     `;
 
     document.body.appendChild(toast);
 
-    const bsToast = new bootstrap.Toast(toast);
-    bsToast.show();
-
-    toast.addEventListener('hidden.bs.toast', function() {
-        toast.remove();
-    });
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 </script>
 
 <style>
-.nav-tabs .nav-link {
-    color: #495057;
+:root {
+    --blue-primary: #1976d2;
+    --blue-deep: #0d47a1;
+    --gray-dark: #2c3e50;
+    --gray-medium: #546e7a;
+    --gray-light: #90a4ae;
+    --gray-pale: #eceff1;
+    --white-pure: #ffffff;
 }
 
-.nav-tabs .nav-link.active {
+.page-container {
+    max-width: 1200px;
+    margin: 100px auto 60px;
+    padding: 0 24px;
+}
+
+.page-header-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+    border-radius: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(25, 118, 210, 0.25);
+}
+
+.page-main-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gray-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+}
+
+.page-subtitle {
+    font-size: 15px;
+    color: var(--gray-medium);
+    line-height: 1.6;
+}
+
+.main-content-card {
+    background: var(--white-pure);
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(38, 50, 56, 0.04),
+                0 12px 40px rgba(38, 50, 56, 0.08);
+    padding: 36px;
+    border: 1px solid rgba(144, 164, 174, 0.12);
+}
+
+.custom-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--gray-pale);
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    color: var(--gray-medium);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-btn:hover {
+    color: var(--blue-primary);
+    background: rgba(25, 118, 210, 0.04);
+}
+
+.tab-btn.active {
+    color: var(--blue-primary);
     font-weight: 600;
-    color: #dc3545;
 }
 
-.nav-tabs .nav-link i {
-    margin-right: 5px;
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blue-primary), var(--blue-deep));
+    border-radius: 2px 2px 0 0;
 }
 
-.card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+.tab-panel {
+    display: none;
 }
 
-.card:hover {
+.tab-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--gray-pale);
+    border-top-color: var(--blue-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.author-card {
+    background: var(--white-pure);
+    border: 1.5px solid var(--gray-pale);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.author-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.03) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.author-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(38, 50, 56, 0.12);
+    border-color: var(--blue-primary);
+}
+
+.author-card:hover::before {
+    opacity: 1;
+}
+
+.author-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.author-info {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.author-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin: 0 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.author-info p {
+    font-size: 13px;
+    color: var(--gray-medium);
+    margin: 0 0 8px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.author-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--gray-light);
+    font-weight: 500;
+}
+
+.btn-follow {
+    padding: 9px 20px;
+    border: 1.5px solid var(--blue-primary);
+    background: transparent;
+    color: var(--blue-primary);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+.btn-follow:hover {
+    background: var(--blue-primary);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+}
+
+.btn-follow.active {
+    background: var(--blue-primary);
+    color: white;
+}
+
+.btn-follow.active:hover {
+    background: #d32f2f;
+    border-color: #d32f2f;
+    box-shadow: 0 4px 16px rgba(211, 47, 47, 0.3);
+}
+
+.btn-loading {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    grid-column: 1 / -1;
+}
+
+.empty-state svg {
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin: 0 0 8px 0;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--gray-medium);
+    margin: 0 0 24px 0;
+}
+
+.btn-primary-custom {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+}
+
+.btn-primary-custom:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px rgba(25, 118, 210, 0.42);
 }
 
-.toast {
+.custom-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
     z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.custom-toast.toast-success {
+    background: linear-gradient(135deg, #43a047, #2e7d32);
+}
+
+.custom-toast.toast-info {
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-deep));
+}
+
+.custom-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.toast-content button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+.toast-content button:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .page-container {
+        margin: 80px auto 40px;
+        padding: 0 16px;
+    }
+
+    .main-content-card {
+        padding: 24px 20px;
+    }
+
+    .page-main-title {
+        font-size: 26px;
+    }
+
+    .authors-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .author-card {
+        padding: 20px;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
 }
 </style>
 {% endblock %}

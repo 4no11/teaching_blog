@@ -452,6 +452,66 @@ def extract_knowledge():
     result = call_ai_api(messages, max_tokens=1000)
     return jsonify({'knowledge': result})
 
+@ai_bp.route('/extract-knowledge-stream', methods=['POST'])
+def extract_knowledge_stream():
+    """流式提取知识点"""
+    data = request.get_json()
+    content = data.get('content', '')
+    title = data.get('title', '')
+
+    if not content:
+        return Response("data: {\"error\": \"请输入课件内容\"}\n\n", mimetype='text/event-stream')
+
+    messages = [
+        {
+            'role': 'system',
+            'content': '''你是一个专业的教育知识提取专家。请从课件内容中提取核心知识点和重点内容：
+
+## 知识点提取结果
+
+### 核心知识点
+（列出5-10个核心知识点，按重要性排序，每个知识点用简短的条目形式）
+
+### 重点内容
+（列出3-5个最重要的重点内容，需要特别强调的部分）
+
+### 知识结构
+（分析知识点之间的逻辑关系，用简短的结构描述）
+
+### 教学重点
+（指出教学过程中需要重点讲解的内容）
+
+### 难点内容
+（指出学生可能难以理解的内容）
+
+请确保提取的知识点准确、全面，结构清晰。'''
+        },
+        {
+            'role': 'user',
+            'content': f'''课件标题：{title}
+课件内容：
+{content}'''
+        }
+    ]
+
+    def generate():
+        for chunk in stream_ai_api(messages, max_tokens=1000):
+            try:
+                if chunk.startswith('data: '):
+                    json_str = chunk[6:].strip()
+                    if json_str and json_str != '[DONE]':
+                        parsed = json.loads(json_str)
+                        choices = parsed.get('choices', [])
+                        if choices:
+                            delta = choices[0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                yield f"data: {{\"content\": {json.dumps(content, ensure_ascii=False)}}}\n\n"
+            except:
+                pass
+
+    return Response(generate(), mimetype='text/event-stream')
+
 @ai_bp.route('/courseware-analyze', methods=['POST'])
 def analyze_courseware():
     data = request.get_json()
@@ -492,6 +552,62 @@ def analyze_courseware():
     result = call_ai_api(messages, max_tokens=1000)
     return jsonify({'analysis': result})
 
+@ai_bp.route('/courseware-analyze-stream', methods=['POST'])
+def analyze_courseware_stream():
+    """流式课件分析"""
+    data = request.get_json()
+    content = data.get('content', '')
+    title = data.get('title', '')
+
+    if not content:
+        return Response("data: {\"error\": \"请输入课件内容\"}\n\n", mimetype='text/event-stream')
+
+    messages = [
+        {'role': 'system', 'content': '''你是一个教学设计专家。请分析课件内容，从以下方面提出优化建议：
+
+## 课件分析报告
+
+### 一、内容完整性
+（评估知识点的覆盖程度和深度）
+
+### 二、逻辑结构
+（评估内容组织是否清晰、层次是否分明）
+
+### 三、可读性评估
+（评估表述是否易懂、专业术语是否过多）
+
+### 四、优化建议
+1. 内容改进建议
+2. 结构优化建议
+3. 表达优化建议
+
+### 五、特色亮点
+（指出课件的优点）
+
+请给出具体、可操作的改进建议。'''},
+        {'role': 'user', 'content': f'''课件标题：{title}
+课件内容：
+{content}'''}
+    ]
+
+    def generate():
+        for chunk in stream_ai_api(messages, max_tokens=1000):
+            try:
+                if chunk.startswith('data: '):
+                    json_str = chunk[6:].strip()
+                    if json_str and json_str != '[DONE]':
+                        parsed = json.loads(json_str)
+                        choices = parsed.get('choices', [])
+                        if choices:
+                            delta = choices[0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                yield f"data: {{\"content\": {json.dumps(content, ensure_ascii=False)}}}\n\n"
+            except:
+                pass
+
+    return Response(generate(), mimetype='text/event-stream')
+
 @ai_bp.route('/courseware-summary', methods=['POST'])
 def generate_summary_objectives():
     data = request.get_json()
@@ -527,6 +643,58 @@ def generate_summary_objectives():
     
     result = call_ai_api(messages, max_tokens=800)
     return jsonify({'summary': result})
+
+@ai_bp.route('/courseware-summary-stream', methods=['POST'])
+def generate_summary_objectives_stream():
+    """流式生成摘要目标"""
+    data = request.get_json()
+    content = data.get('content', '')
+
+    if not content:
+        return Response("data: {\"error\": \"请输入课件内容\"}\n\n", mimetype='text/event-stream')
+
+    messages = [
+        {'role': 'system', 'content': '''你是一个教学设计专家。请根据课件内容生成摘要和学习目标：
+
+## 内容摘要
+（用2-3段话概括课件核心内容，150字左右）
+
+## 学习目标
+
+### 知识与技能目标
+1. 
+
+### 过程与方法目标
+1. 
+
+### 情感态度与价值观目标
+1. 
+
+## 核心知识点清单
+（列出5-8个核心知识点，用简短条目形式）
+
+要求表述简洁、明确，便于教师参考和学生理解。'''},
+        {'role': 'user', 'content': f'''请分析以下课件内容：
+{content}'''}
+    ]
+
+    def generate():
+        for chunk in stream_ai_api(messages, max_tokens=800):
+            try:
+                if chunk.startswith('data: '):
+                    json_str = chunk[6:].strip()
+                    if json_str and json_str != '[DONE]':
+                        parsed = json.loads(json_str)
+                        choices = parsed.get('choices', [])
+                        if choices:
+                            delta = choices[0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                yield f"data: {{\"content\": {json.dumps(content, ensure_ascii=False)}}}\n\n"
+            except:
+                pass
+
+    return Response(generate(), mimetype='text/event-stream')
 
 @ai_bp.route('/courseware-layout', methods=['POST'])
 def suggest_layout():
@@ -571,6 +739,66 @@ def suggest_layout():
     
     result = call_ai_api(messages, max_tokens=800)
     return jsonify({'layout': result})
+
+@ai_bp.route('/courseware-layout-stream', methods=['POST'])
+def suggest_layout_stream():
+    """流式生成排版建议"""
+    data = request.get_json()
+    content = data.get('content', '')
+    page_count = data.get('page_count', 10)
+
+    if not content:
+        return Response("data: {\"error\": \"请输入课件内容\"}\n\n", mimetype='text/event-stream')
+
+    messages = [
+        {'role': 'system', 'content': '''你是一个课件排版专家。请根据内容提供智能排版建议：
+
+## 排版建议方案
+
+### 一、整体结构规划
+建议将内容分为X个部分，每部分X页
+
+### 二、页面分配
+- 导入/封面：1页
+- 知识讲解：X页
+- 示例/案例：X页
+- 练习/互动：X页
+- 总结/作业：1页
+
+### 三、布局建议
+1. 每页信息量控制（建议不超过X个要点）
+2. 字体大小建议
+3. 配色方案建议
+4. 图表/配图建议
+
+### 四、重点内容突出
+（建议哪些内容需要特别强调、如何突出）
+
+### 五、视觉层次
+（建议标题、正文、注释的层级关系）
+
+请给出实用、具体的排版指南。'''},
+        {'role': 'user', 'content': f'''课件共约{page_count}页，内容如下：
+{content}'''}
+    ]
+
+    def generate():
+        for chunk in stream_ai_api(messages, max_tokens=800):
+            try:
+                if chunk.startswith('data: '):
+                    json_str = chunk[6:].strip()
+                    if json_str and json_str != '[DONE]':
+                        parsed = json.loads(json_str)
+                        choices = parsed.get('choices', [])
+                        if choices:
+                            delta = choices[0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                yield f"data: {{\"content\": {json.dumps(content, ensure_ascii=False)}}}\n\n"
+            except:
+                pass
+
+    return Response(generate(), mimetype='text/event-stream')
 
 @ai_bp.route('/teaching-reflection', methods=['POST'])
 def generate_reflection():
@@ -617,6 +845,68 @@ def generate_reflection():
     
     result = call_ai_api(messages, max_tokens=1000)
     return jsonify({'reflection': result})
+
+@ai_bp.route('/teaching-reflection-stream', methods=['POST'])
+def generate_reflection_stream():
+    """流式生成教学反思"""
+    data = request.get_json()
+    process = data.get('process', '')
+    subject = data.get('subject', '')
+    grade = data.get('grade', '')
+
+    if not process:
+        return Response("data: {\"error\": \"请输入教学过程记录\"}\n\n", mimetype='text/event-stream')
+
+    messages = [
+        {'role': 'system', 'content': '''你是一个资深教学专家。请根据教学过程记录，生成教学反思要点和改进建议：
+
+## 教学反思报告
+
+### 一、教学亮点
+（回顾本节课的成功之处）
+
+### 二、不足与反思
+1. 教学设计层面：
+2. 教学过程层面：
+3. 学生反馈层面：
+
+### 三、改进建议
+1. 短期改进（下次课可调整）：
+2. 中期改进（学期内可优化）：
+3. 长期发展方向：
+
+### 四、教学策略推荐
+（针对当前教学内容，推荐3-5种有效的教学策略）
+
+### 五、备选方案
+（如时间充裕可以增加的环节）
+
+请给出真诚、务实的反思建议。'''},
+        {'role': 'user', 'content': f'''教学基本信息:
+- 学科:{subject}
+- 年级:{grade}
+
+教学过程记录:
+{process}'''}
+    ]
+
+    def generate():
+        for chunk in stream_ai_api(messages, max_tokens=1000):
+            try:
+                if chunk.startswith('data: '):
+                    json_str = chunk[6:].strip()
+                    if json_str and json_str != '[DONE]':
+                        parsed = json.loads(json_str)
+                        choices = parsed.get('choices', [])
+                        if choices:
+                            delta = choices[0].get('delta', {})
+                            content = delta.get('content', '')
+                            if content:
+                                yield f"data: {{\"content\": {json.dumps(content, ensure_ascii=False)}}}\n\n"
+            except:
+                pass
+
+    return Response(generate(), mimetype='text/event-stream')
 
 # ========== 一键备课功能相关接口 ==========
 

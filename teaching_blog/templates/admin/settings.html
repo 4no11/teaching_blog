@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+
+{% block title %}个人设置 - 管理后台{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">个人设置</h3>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">用户名</label>
+                    <input type="text" name="username" class="form-control" value="{{ user.username }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">邮箱</label>
+                    <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">个人简介</label>
+                <textarea name="bio" class="form-control" rows="3" placeholder="介绍一下自己...">{{ user.bio or '' }}</textarea>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">注册时间</label>
+                <input type="text" class="form-control" value="{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" disabled>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> 保存修改
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

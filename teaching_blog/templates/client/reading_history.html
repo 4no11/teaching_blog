@@ -3,50 +3,590 @@
 {% block title %}阅读历史 - 师备云{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h2 class="text-center mb-2">
-                    <i class="bi bi-clock-history text-primary"></i> 阅读历史
-                </h2>
-                <p class="text-center text-muted">记录您的学习轨迹，方便回顾</p>
-            </div>
+<style>
+:root {
+    --primary-color: #2196F3;
+    --primary-dark: #1976D2;
+    --primary-light: #64B5F6;
+    --white-pure: #FFFFFF;
+    --white-soft: #F8FAFC;
+    --gray-pale: #E8ECF1;
+    --gray-light: #F1F5F9;
+    --gray-medium: #CBD5E1;
+    --gray-text: #64748B;
+    --gray-dark: #475569;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+.history-page {
+    min-height: calc(100vh - 200px);
+    padding: 40px 20px;
+    background: linear-gradient(135deg, var(--white-soft) 0%, var(--gray-light) 100%);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.3);
+    animation: float 3s ease-in-out infinite;
+}
+
+.header-icon svg {
+    width: 42px;
+    height: 42px;
+    fill: white;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gray-dark);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--gray-text);
+    font-weight: 400;
+}
+
+.stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    padding: 18px 24px;
+    background: var(--white-pure);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--gray-pale);
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.stats-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.stats-info svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--primary-color);
+}
+
+.clear-btn {
+    padding: 9px 20px;
+    background: linear-gradient(135deg, #FF5252, #FF1744);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(255, 82, 82, 0.25);
+}
+
+.clear-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(255, 82, 82, 0.35);
+}
+
+.clear-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+    animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.history-card {
+    background: var(--white-pure);
+    border: 1.5px solid var(--gray-pale);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.card-cover {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--gray-light), var(--gray-medium));
+}
+
+.card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.history-card:hover .card-cover img {
+    transform: scale(1.08);
+}
+
+.cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+}
+
+.cover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.5) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 16px;
+}
+
+.history-card:hover .cover-overlay {
+    opacity: 1;
+}
+
+.btn-delete {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 82, 82, 0.9);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+.btn-delete:hover {
+    background: #FF1744;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.btn-delete svg {
+    width: 18px;
+    height: 18px;
+    fill: white;
+}
+
+.card-body-custom {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin-bottom: 10px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.card-title a:hover {
+    color: var(--primary-color);
+}
+
+.card-summary {
+    font-size: 0.9rem;
+    color: var(--gray-text);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gray-pale);
+    font-size: 0.85rem;
+    color: var(--gray-text);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta-item svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--primary-color);
+    fill: none;
+    stroke-width: 2;
+}
+
+.card-actions {
+    margin-left: auto;
+}
+
+.btn-continue {
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-continue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.35);
+}
+
+.btn-continue svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+}
+
+.pagination-custom {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.page-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 14px;
+    background: var(--white-pure);
+    border: 1.5px solid var(--gray-pale);
+    border-radius: var(--radius-sm);
+    color: var(--gray-text);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 80px 20px;
+    animation: fadeIn 0.4s ease;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--gray-pale);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+.loading-text {
+    color: var(--gray-text);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    animation: fadeIn 0.4s ease;
+}
+
+.empty-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--gray-light), var(--gray-medium));
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 3s ease-in-out infinite;
+}
+
+.empty-icon svg {
+    width: 60px;
+    height: 60px;
+    stroke: var(--gray-text);
+    fill: none;
+    stroke-width: 1.5;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin-bottom: 10px;
+}
+
+.empty-desc {
+    font-size: 1rem;
+    color: var(--gray-text);
+    margin-bottom: 28px;
+}
+
+.btn-explore {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
+}
+
+.btn-explore:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4);
+}
+
+.btn-explore svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .history-page {
+        padding: 30px 16px;
+    }
+
+    .page-title {
+        font-size: 2rem;
+    }
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .header-icon svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .history-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .stats-bar {
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+    }
+
+    .card-cover {
+        height: 160px;
+    }
+
+    .card-meta {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .card-actions {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .btn-continue {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<div class="history-page">
+    <div class="page-header">
+        <div class="header-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+            </svg>
         </div>
+        <h1 class="page-title">阅读历史</h1>
+        <p class="page-subtitle">记录您的学习轨迹，方便回顾与复习</p>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <div id="loadingState" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-3">加载中...</p>
-                </div>
+    <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在加载阅读记录...</p>
+    </div>
 
-                <div id="emptyState" class="text-center py-5" style="display: none;">
-                    <i class="bi bi-clock" style="font-size: 4rem; color: #ccc;"></i>
-                    <p class="mt-3 text-muted">还没有阅读任何文章</p>
-                    <a href="{{ url_for('client.index') }}" class="btn btn-primary">去逛逛</a>
-                </div>
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+        </div>
+        <h3 class="empty-title">暂无阅读记录</h3>
+        <p class="empty-desc">您还没有浏览过任何文章，开始探索精彩内容吧！</p>
+        <a href="{{ url_for('client.index') }}" class="btn-explore">
+            <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            去逛逛
+        </a>
+    </div>
 
-                <div id="historyList" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted small" id="historyCount"></span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="clearAllHistory()" id="clearAllBtn" style="display: none;">
-                            <i class="bi bi-trash"></i> 清空历史
-                        </button>
-                    </div>
-                    <div class="list-group" id="historyContainer"></div>
-
-                    <nav aria-label="Page navigation" class="mt-4">
-                        <ul class="pagination justify-content-center" id="pagination"></ul>
-                    </nav>
-                </div>
+    <div id="historyList" style="display: none;">
+        <div class="stats-bar">
+            <div class="stats-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span id="historyCount"></span>
             </div>
+            <button class="clear-btn" onclick="clearAllHistory()" id="clearAllBtn" style="display: none;">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                清空历史
+            </button>
+        </div>
+
+        <div class="history-grid" id="historyContainer"></div>
+
+        <div class="pagination-wrapper">
+            <nav class="pagination-custom" id="pagination"></nav>
         </div>
     </div>
 </div>
@@ -91,42 +631,49 @@ function renderReadingHistory(data) {
         return;
     }
 
-    document.getElementById('historyCount').textContent = `共 ${data.total} 条记录`;
+    document.getElementById('historyCount').textContent = `共 ${data.total} 条阅读记录`;
 
     if (data.total > 0) {
-        document.getElementById('clearAllBtn').style.display = 'inline-block';
+        document.getElementById('clearAllBtn').style.display = 'inline-flex';
     }
 
     container.innerHTML = data.history.map(item => `
-        <div class="list-group-item history-item" data-id="${item.id}">
-            <div class="row align-items-center">
-                <div class="col-md-2 col-3">
-                    ${item.cover_image
-                        ? `<img src="${item.cover_image}" class="img-fluid rounded" alt="${item.title}" style="max-height: 80px; object-fit: cover;">`
-                        : `<div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="height: 80px;">
-                            <i class="bi bi-image text-white" style="font-size: 1.5rem;"></i>
-                           </div>`
-                    }
-                </div>
-                <div class="col-md-7 col-9">
-                    <h6 class="mb-1">
-                        <a href="/post/${item.slug}" class="text-decoration-none text-dark">
-                            ${item.title}
-                        </a>
-                    </h6>
-                    <p class="mb-1 text-muted small">${item.summary ? item.summary.substring(0, 80) + '...' : ''}</p>
-                    <small class="text-muted">
-                        <i class="bi bi-clock"></i> ${item.read_at}
-                        ${item.read_duration > 0 ? `<span class="ms-2"><i class="bi bi-hourglass-split"></i> 约${Math.round(item.read_duration / 60)}分钟</span>` : ''}
-                    </small>
-                </div>
-                <div class="col-md-3 col-12 text-md-end mt-2 mt-md-0">
-                    <a href="/post/${item.slug}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-arrow-repeat"></i> 继续阅读
-                    </a>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="removeHistory(${item.id})">
-                        <i class="bi bi-x-lg"></i>
+        <div class="history-card" data-id="${item.id}">
+            <div class="card-cover">
+                ${item.cover_image
+                    ? `<img src="${item.cover_image}" alt="${item.title}">`
+                    : `<div class="cover-placeholder">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                       </div>`
+                }
+                <div class="cover-overlay">
+                    <button class="btn-delete" onclick="removeHistory(${item.id})" title="删除记录">
+                        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
                     </button>
+                </div>
+            </div>
+            <div class="card-body-custom">
+                <h3 class="card-title">
+                    <a href="/post/${item.slug}">${item.title}</a>
+                </h3>
+                <p class="card-summary">${item.summary ? item.summary.substring(0, 120) + '...' : ''}</p>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        ${item.read_at}
+                    </span>
+                    ${item.read_duration > 0 ? `
+                    <span class="meta-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6v6l4 2"/></svg>
+                        约${Math.round(item.read_duration / 60)}分钟
+                    </span>
+                    ` : ''}
+                    <div class="card-actions">
+                        <a href="/post/${item.slug}" class="btn-continue">
+                            <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                            继续阅读
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -145,27 +692,21 @@ function renderPagination(data) {
 
     let html = '';
 
-    if (data.current_page > 1) {
-        html += `<li class="page-item">
-            <a class="page-link" href="javascript:void(0)" onclick="loadReadingHistory(${currentPage - 1})">上一页</a>
-        </li>`;
-    }
+    html += `<button class="page-btn" onclick="loadReadingHistory(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </button>`;
 
     for (let i = 1; i <= data.pages; i++) {
         if (i === 1 || i === data.pages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                <a class="page-link" href="javascript:void(0)" onclick="loadReadingHistory(${i})">${i}</a>
-            </li>`;
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadReadingHistory(${i})">${i}</button>`;
         } else if (i === currentPage - 3 || i === currentPage + 3) {
-            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            html += `<span style="color: var(--gray-text); padding: 0 4px;">...</span>`;
         }
     }
 
-    if (data.current_page < data.pages) {
-        html += `<li class="page-item">
-            <a class="page-link" href="javascript:void(0)" onclick="loadReadingHistory(${currentPage + 1})">下一页</a>
-        </li>`;
-    }
+    html += `<button class="page-btn" onclick="loadReadingHistory(${currentPage + 1})" ${currentPage === data.pages ? 'disabled' : ''}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>`;
 
     pagination.innerHTML = html;
 }
@@ -178,9 +719,17 @@ async function removeHistory(historyId) {
         const data = await response.json();
 
         if (data.success) {
-            loadReadingHistory(currentPage);
+            const card = document.querySelector(`.history-card[data-id="${historyId}"]`);
+            if (card) {
+                card.style.transform = 'scale(0.8)';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    loadReadingHistory(currentPage);
+                }, 300);
+            }
         }
     } catch (error) {
+        console.error('删除失败:', error);
     }
 }
 
@@ -199,6 +748,7 @@ async function clearAllHistory() {
             showEmpty();
         }
     } catch (error) {
+        console.error('清空失败:', error);
     }
 }
 

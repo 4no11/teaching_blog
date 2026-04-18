@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+
+{% block title %}评论管理 - 管理后台{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">评论管理</h3>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">评论内容</th>
+                    <th>用户</th>
+                    <th>文章</th>
+                    <th>发布时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comment in comments.items %}
+                <tr>
+                    <td>{{ comment.content[:50] }}{% if comment.content|length > 50 %}...{% endif %}</td>
+                    <td>{{ comment.user.username }}</td>
+                    <td>
+                        {% if comment.post %}
+                        <a href="{{ url_for('client.post_detail', slug=comment.post.slug) }}" target="_blank">
+                            {{ (comment.post.title or '无标题')[:20] }}...
+                        </a>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.delete_comment', id=comment.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这条评论吗？')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-5">暂无评论</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if comments.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4">
+                {% if comments.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.comments', page=comments.prev_num) }}">上一页</a>
+                    </li>
+                {% endif %}
+                {% for page_num in comments.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == comments.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('admin.comments', page=page_num) }}">{{ page_num }}</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if comments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.comments', page=comments.next_num) }}">下一页</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

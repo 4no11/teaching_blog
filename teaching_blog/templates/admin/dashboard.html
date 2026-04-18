@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block title %}仪表盘 - 管理后台{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">仪表盘</h3>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h3>{{ stats.posts }}</h3>
+            <p class="mb-0">文章总数</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <h3>{{ stats.published }}</h3>
+            <p class="mb-0">已发布</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <h3>{{ stats.comments }}</h3>
+            <p class="mb-0">评论数</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <h3>{{ stats.users }}</h3>
+            <p class="mb-0">用户数</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">最近发布的文章</h5>
+        <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus"></i> 发布新文章
+        </a>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>分类</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>发布时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in recent_posts %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('client.post_detail', slug=post.slug) }}" target="_blank">
+                            {{ post.title[:30] }}...
+                        </a>
+                    </td>
+                    <td>{{ post.category.name }}</td>
+                    <td>
+                        {% if post.post_type == 'note' %}📝 教学笔记
+                        {% elif post.post_type == 'resource' %}📚 教育资源
+                        {% else %}💡 教育心得{% endif %}
+                    </td>
+                    <td>
+                        {% if post.is_published %}
+                            <span class="badge bg-success">已发布</span>
+                        {% else %}
+                            <span class="badge bg-warning">草稿</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.edit_post', id=post.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('admin.delete_post', id=post.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要删除这篇文章吗？')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">暂无文章</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
