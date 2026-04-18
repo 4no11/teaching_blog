@@ -2,71 +2,656 @@
 
 {% block title %}{{ type_name }} - 师备云{% endblock %}
 
+{% block styles %}
+<style>
+    :root {
+        --blue-primary: #1976D2;
+        --blue-dark: #1565C0;
+        --blue-light: #42A5F5;
+        --blue-pale: #E3F2FD;
+        --gray-50: #FAFAFA;
+        --gray-100: #F5F5F5;
+        --gray-200: #EEEEEE;
+        --gray-300: #E0E0E0;
+        --gray-400: #BDBDBD;
+        --gray-500: #9E9E9E;
+        --gray-600: #757575;
+        --gray-700: #616161;
+        --gray-800: #424242;
+        --gray-900: #212121;
+        --white: #FFFFFF;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+    }
+
+    .notes-hero {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #e1f5fe 100%);
+        border-radius: 20px;
+        padding: 35px 40px;
+        margin-top: -20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            0 4px 20px rgba(25, 118, 210, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-bg-pattern {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 400px;
+        height: 100%;
+        opacity: 0.06;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231976d2' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        border-radius: 0 20px 20px 0;
+    }
+
+    .notes-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .notes-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -5%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 50%;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: #0d47a1;
+        margin-bottom: 12px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        font-size: 15px;
+        color: #546e7a;
+        max-width: 650px;
+        line-height: 1.6;
+        font-weight: 400;
+    }
+
+    .type-tabs-container {
+        background: var(--white);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(25, 118, 210, 0.12);
+        padding: 6px;
+        margin-top: 24px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .type-tabs {
+        display: flex;
+        gap: 8px;
+        background: var(--gray-100);
+        padding: 4px;
+        border-radius: 16px;
+    }
+
+    .type-tab {
+        flex: 1;
+        padding: 12px 20px;
+        text-align: center;
+        border-radius: 14px;
+        text-decoration: none;
+        color: var(--gray-600);
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .type-tab::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(25, 118, 210, 0.08);
+        transition: all 0.5s ease;
+        transform: translate(-50%, -50%);
+    }
+
+    .type-tab:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .type-tab:hover {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #0d47a1;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(25, 118, 210, 0.12);
+        border: 2px solid rgba(25, 118, 210, 0.15);
+    }
+
+    .type-tab i {
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .type-tab span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .type-tab.active {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #0d47a1;
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+        font-weight: 800;
+        border: 2px solid rgba(25, 118, 210, 0.2);
+    }
+
+    .search-section {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 18px;
+        margin: 40px 0;
+        box-shadow: 0 4px 24px rgba(25, 118, 210, 0.08);
+        border: 1px solid rgba(25, 118, 210, 0.05);
+    }
+
+    .search-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .search-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background: var(--blue-pale);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-icon-wrapper i {
+        font-size: 1.5rem;
+        color: var(--blue-primary);
+    }
+
+    .search-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .search-form {
+        position: relative;
+    }
+
+    .search-input-group {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input-wrapper i {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        font-size: 1.1rem;
+        z-index: 10;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 18px 10px 44px;
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        background: var(--gray-50);
+        color: var(--gray-900);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--blue-primary);
+        background: var(--white);
+        box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: var(--gray-400);
+    }
+
+    .search-btn {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        color: #0d47a1;
+        border: 2px solid rgba(25, 118, 210, 0.2);
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .search-btn:hover {
+        background: linear-gradient(135deg, #bbdefb 0%, #e1f5fe 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 118, 210, 0.18);
+        border-color: rgba(25, 118, 210, 0.35);
+    }
+
+    .search-btn:active {
+        transform: translateY(0);
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 28px;
+        margin: 40px 0;
+    }
+
+    .post-card-modern {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(25, 118, 210, 0.08);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .post-card-link {
+        display: block;
+        height: 100%;
+    }
+
+    .post-card-link:hover .post-card-modern {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(25, 118, 210, 0.18);
+        border-color: var(--blue-light);
+    }
+
+    .card-image-wrapper {
+        position: relative;
+        height: 220px;
+        background: linear-gradient(135deg, var(--blue-pale) 0%, var(--gray-100) 100%);
+        overflow: hidden;
+    }
+
+    .card-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        opacity: 0.3;
+        background: linear-gradient(135deg, #E3F2FD 0%, #F5F5F5 100%);
+    }
+
+    .card-category-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: var(--white);
+        color: var(--blue-primary);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .card-body-modern {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-title-modern {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 12px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.3s ease;
+    }
+
+    .post-card-link:hover .card-title-modern {
+        color: var(--blue-primary);
+    }
+
+    .card-summary {
+        color: var(--gray-600);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-footer-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .card-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--gray-500);
+        font-size: 0.875rem;
+    }
+
+    .card-meta-item i {
+        font-size: 0.95rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        color: var(--gray-300);
+        margin-bottom: 24px;
+    }
+
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-700);
+        margin-bottom: 12px;
+    }
+
+    .empty-text {
+        color: var(--gray-500);
+        font-size: 1.05rem;
+        max-width: 450px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin: 48px 0;
+        padding: 24px;
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .page-link-custom {
+        padding: 10px 18px;
+        border: 2px solid rgba(25, 118, 210, 0.2);
+        background: var(--white);
+        color: #0d47a1;
+        text-decoration: none;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .page-link-custom:hover {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-color: rgba(25, 118, 210, 0.35);
+        color: #0d47a1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.12);
+    }
+
+    .page-link-custom.active {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-color: rgba(25, 118, 210, 0.35);
+        color: #0d47a1;
+        font-weight: 800;
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+    }
+
+    .page-link-custom.disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .search-input-group {
+            flex-direction: column;
+        }
+
+        .search-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .type-tabs {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="mb-4">
-    <h2 class="mb-2">{{ type_name }}</h2>
-    <div class="nav nav-pills">
-        <a class="nav-link {% if post_type == 'note' %}active{% endif %}" href="{{ url_for('client.post_type', post_type='note') }}">📝 教学笔记</a>
-        <a class="nav-link {% if post_type == 'resource' %}active{% endif %}" href="{{ url_for('client.post_type', post_type='resource') }}">📚 教育资源</a>
-        <a class="nav-link {% if post_type == 'experience' %}active{% endif %}" href="{{ url_for('client.post_type', post_type='experience') }}">💡 教育心得</a>
+<div class="notes-hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">{{ type_name }}</h1>
+            <p class="hero-subtitle">探索优质教育资源，提升教学效率与质量</p>
+        </div>
     </div>
 </div>
 
-{% if posts.items %}
-    <div class="row">
-        {% for post in posts.items %}
-        <div class="col-md-6 mb-4">
-            <div class="card post-card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <a href="{{ url_for('client.post_detail', slug=post.slug) }}" class="text-decoration-none text-dark">
+<div class="container" style="margin-top: 0; position: relative; z-index: 10;">
+    <div class="type-tabs-container">
+        <div class="type-tabs">
+            <a href="{{ url_for('client.post_type', post_type='note') }}" 
+               class="type-tab {% if post_type == 'note' %}active{% endif %}">
+                <i class="bi bi-journal-text"></i>
+                <span>教学笔记</span>
+            </a>
+            <a href="{{ url_for('client.post_type', post_type='resource') }}" 
+               class="type-tab {% if post_type == 'resource' %}active{% endif %}">
+                <i class="bi bi-book"></i>
+                <span>教育资源</span>
+            </a>
+            <a href="{{ url_for('client.post_type', post_type='experience') }}" 
+               class="type-tab {% if post_type == 'experience' %}active{% endif %}">
+                <i class="bi bi-lightbulb"></i>
+                <span>教育心得</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="search-section">
+        <form action="{{ url_for('client.search') }}" method="GET" class="search-form">
+            <div class="search-input-group">
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" 
+                           name="keyword" 
+                           class="search-input" 
+                           placeholder="输入关键词搜索文章标题或内容..."
+                           value="{{ request.args.get('keyword', '') }}">
+                </div>
+                <button type="submit" class="search-btn">
+                    <i class="bi bi-search"></i>
+                    <span>搜索</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if posts.items %}
+        <div class="content-grid">
+            {% for post in posts.items %}
+            <a href="{{ url_for('client.post_detail', slug=post.slug) }}" 
+               class="post-card-link"
+               style="text-decoration: none; color: inherit;">
+            <article class="post-card-modern">
+                <div class="card-image-wrapper">
+                    {% if post.cover_image %}
+                        <img src="{{ post.cover_image }}" alt="{{ post.title }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <div class="card-image-placeholder">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    {% endif %}
+                    {% if post.category %}
+                    <span class="card-category-badge">{{ post.category.name }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body-modern">
+                    <h3 class="card-title-modern">
                             {{ post.title }}
-                        </a>
-                    </h5>
-                    <p class="card-text text-muted">{{ post.summary[:100] }}...</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar"></i> {{ post.created_at.strftime('%Y-%m-%d') }}
-                        </small>
-                        <small class="text-muted">
-                            <i class="bi bi-eye"></i> {{ post.views }}
-                        </small>
+                    </h3>
+
+                    <p class="card-summary">{{ post.summary[:150] if post.summary else '暂无摘要' }}...</p>
+
+                    <div class="card-footer-modern">
+                        <div class="card-meta-item">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <div class="card-meta-item">
+                            <i class="bi bi-eye"></i>
+                            <span>{{ post.views }} 次浏览</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </article>
+            </a>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    
-    <nav aria-label="Page navigation" class="mt-4">
-        <ul class="pagination justify-content-center">
+
+        {% if posts.pages > 1 %}
+        <nav class="pagination-modern" aria-label="Page navigation">
             {% if posts.has_prev %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('client.post_type', post_type=post_type, page=posts.prev_num) }}">上一页</a>
-                </li>
+                <a class="page-link-custom" 
+                   href="{{ url_for('client.post_type', post_type=post_type, page=posts.prev_num) }}">
+                    <i class="bi bi-chevron-left"></i> 上一页
+                </a>
+            {% else %}
+                <span class="page-link-custom disabled">
+                    <i class="bi bi-chevron-left"></i> 上一页
+                </span>
             {% endif %}
+
             {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
                 {% if page_num %}
                     {% if page_num == posts.page %}
-                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                        <span class="page-link-custom active">{{ page_num }}</span>
                     {% else %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('client.post_type', post_type=post_type, page=page_num) }}">{{ page_num }}</a></li>
+                        <a class="page-link-custom" 
+                           href="{{ url_for('client.post_type', post_type=post_type, page=page_num) }}">
+                            {{ page_num }}
+                        </a>
                     {% endif %}
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <span class="page-link-custom disabled">...</span>
                 {% endif %}
             {% endfor %}
+
             {% if posts.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('client.post_type', post_type=post_type, page=posts.next_num) }}">下一页</a>
-                </li>
+                <a class="page-link-custom" 
+                   href="{{ url_for('client.post_type', post_type=post_type, page=posts.next_num) }}">
+                    下一页 <i class="bi bi-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="page-link-custom disabled">
+                    下一页 <i class="bi bi-chevron-right"></i>
+                </span>
             {% endif %}
-        </ul>
-    </nav>
-{% else %}
-    <div class="text-center py-5">
-        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-        <p class="mt-3 text-muted">暂无{{ type_name }}</p>
-    </div>
-{% endif %}
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h2 class="empty-title">暂无{{ type_name }}</h2>
+            <p class="empty-text">
+                该分类下还没有发布任何内容<br>
+                请稍后再来查看，或者尝试其他分类
+            </p>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
