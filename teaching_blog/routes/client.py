@@ -851,8 +851,187 @@ def videos():
 @client_bp.route('/learning-progress')
 def learning_progress():
     """学习进度管理页面"""
+    from datetime import datetime, timedelta
+    import random
+    
     categories = Category.query.all()
-    return render_template('client/learning_progress.html', categories=categories)
+    
+    # 生成示例学习进度数据
+    has_progress = True
+    overall_completion = random.randint(35, 75)
+    completed_count = random.randint(8, 15)
+    total_count = random.randint(18, 25)
+    difficult_count = random.randint(3, 6)
+    difficult_percentage = round((difficult_count / total_count) * 100)
+    study_hours = round(random.uniform(20, 80), 1)
+    weekly_hours = round(random.uniform(8, 15), 1)
+    daily_avg_hours = round(study_hours / 7, 1)
+    
+    # 学习路径数据
+    learning_path = []
+    stages = [
+        ('基础知识', random.randint(60, 100)),
+        ('核心概念', random.randint(40, 90)),
+        ('进阶应用', random.randint(30, 70)),
+        ('实战项目', random.randint(10, 50)),
+        ('综合提升', random.randint(5, 40))
+    ]
+    
+    for i, (name, progress) in enumerate(stages):
+        is_completed = progress >= 85
+        is_difficult = 40 <= progress < 65
+        
+        learning_path.append({
+            'name': name,
+            'progress': progress,
+            'completed': is_completed,
+            'is_difficult': is_difficult,
+            'knowledge_points_count': random.randint(5, 12),
+            'last_study_time': datetime.now() - timedelta(days=random.randint(0, 7))
+        })
+    
+    # 困难内容数据
+    difficult_contents = []
+    topics = ['函数式编程', '异步处理', '设计模式', '算法优化', '数据库查询', 'API集成']
+    for i in range(min(difficult_count, len(topics))):
+        difficult_contents.append({
+            'id': f'difficult_{i+1}',
+            'title': topics[i],
+            'comprehension_rate': random.randint(25, 55),
+            'error_count': random.randint(2, 8),
+            'difficulty_level': random.choice(['high', 'medium', 'low'])
+        })
+    
+    # 每日学习趋势数据（最近14天）
+    days = [(datetime.now() - timedelta(days=i)).strftime('%m/%d') for i in range(13, -1, -1)]
+    daily_data = [round(random.uniform(1.5, 4.5), 1) for _ in range(14)]
+    daily_study_data = {
+        'labels': days,
+        'data': daily_data
+    }
+    
+    # 知识点掌握分布
+    mastery_distribution = [
+        max(0, min(100, overall_completion + random.randint(-5, 5))),
+        max(0, min(100, 100 - overall_completion + random.randint(-10, 10))),
+        max(0, min(100, random.randint(5, 15)))
+    ]
+    
+    # 改进建议
+    suggestions = [
+        {
+            'content': '建议加强基础知识的复习，特别是函数式编程和异步处理部分',
+            'sub_suggestions': [
+                '每天安排30分钟专项练习',
+                '完成相关练习题至少20道',
+                '观看教学视频并做笔记'
+            ]
+        },
+        {
+            'content': '增加实战项目的练习时间',
+            'sub_suggestions': [
+                '每周完成一个小型项目',
+                '参与开源项目贡献代码',
+                '编写技术博客总结经验'
+            ]
+        },
+        {
+            'content': '优化学习方法，提高学习效率',
+            'sub_suggestions': [
+                '使用番茄工作法管理时间',
+                '定期回顾已学内容',
+                '建立知识思维导图'
+            ]
+        },
+        {
+            'content': '加强算法和数据结构的学习',
+            'sub_suggestions': [
+                '每日刷LeetCode题目',
+                '重点练习动态规划和图论',
+                '参加算法竞赛提升能力'
+            ]
+        }
+    ]
+
+    # 课程目录/学习进程数据
+    course_units = [
+        {
+            'name': '第一单元',
+            'lessons': [
+                {'number': '1.1', 'title': '算法引论', 'status': 'completed'},
+                {'number': '1.2', 'title': '算法复杂度分析', 'status': 'completed'},
+                {'number': '1.3', 'title': '递归与分治思想', 'status': 'completed'}
+            ]
+        },
+        {
+            'name': '第二单元',
+            'lessons': [
+                {'number': '2.1', 'title': '递归法', 'status': 'completed'},
+                {'number': '2.2', 'title': '分治法', 'status': 'completed'},
+                {'number': '2.3', 'title': '动态规划基础', 'status': 'completed'}
+            ]
+        },
+        {
+            'name': '第三单元',
+            'lessons': [
+                {'number': '3.1', 'title': '回溯法', 'status': 'completed'},
+                {'number': '3.2', 'title': '分支限界法', 'status': 'in-progress'},
+                {'number': '3.3', 'title': '剪枝优化技巧', 'status': 'not-started'}
+            ]
+        },
+        {
+            'name': '第四单元',
+            'lessons': [
+                {'number': '4.1', 'title': '分支限界法', 'status': 'in-progress'},
+                {'number': '4.2', 'title': '优先队列应用', 'status': 'not-started'},
+                {'number': '4.3', 'title': '最短路径问题', 'status': 'not-started'}
+            ]
+        },
+        {
+            'name': '第五单元',
+            'lessons': [
+                {'number': '5.1', 'title': '贪心法', 'status': 'completed'},
+                {'number': '5.2', 'title': '贪心策略证明', 'status': 'not-started'},
+                {'number': '5.3', 'title': '经典贪心问题', 'status': 'not-started'}
+            ]
+        },
+        {
+            'name': '第六单元',
+            'lessons': [
+                {'number': '6.1', 'title': '图论基础', 'status': 'not-started'},
+                {'number': '6.2', 'title': '最小生成树', 'status': 'not-started'},
+                {'number': '6.3', 'title': '网络流算法', 'status': 'not-started'}
+            ]
+        }
+    ]
+
+    # 统计任务点数量
+    total_tasks_count = sum(len(unit['lessons']) for unit in course_units)
+    completed_tasks_count = sum(
+        1 for unit in course_units 
+        for lesson in unit['lessons'] 
+        if lesson['status'] == 'completed'
+    )
+
+    return render_template('client/learning_progress.html',
+                         categories=categories,
+                         has_progress=has_progress,
+                         overall_completion=overall_completion,
+                         completed_count=completed_count,
+                         total_count=total_count,
+                         difficult_count=difficult_count,
+                         difficult_percentage=difficult_percentage,
+                         study_hours=study_hours,
+                         weekly_hours=weekly_hours,
+                         daily_avg_hours=daily_avg_hours,
+                         learning_path=learning_path,
+                         difficult_contents=difficult_contents,
+                         daily_study_data=daily_study_data,
+                         mastery_distribution=mastery_distribution,
+                         suggestions=suggestions,
+                         course_units=course_units,
+                         completed_tasks_count=completed_tasks_count,
+                         total_tasks_count=total_tasks_count)
 
 
 

@@ -4,276 +4,1307 @@
 
 {% block styles %}
 <style>
-    .progress-card {
-        border-radius: 16px !important;
-        overflow: hidden;
-        transition: all 0.3s ease !important;
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-    }
+/* ========== CSS变量定义 - 蓝白灰配色系统 ========== */
+:root {
+    --primary-blue: #1e40af;
+    --primary-blue-light: #3b82f6;
+    --primary-blue-lighter: #60a5fa;
+    --primary-blue-bg: #eff6ff;
+    --accent-blue: #2563eb;
+    
+    --white: #ffffff;
+    --white-off: #f8fafc;
+    --white-muted: #f1f5f9;
+    
+    --gray-dark: #334155;
+    --gray-medium: #64748b;
+    --gray-light: #94a3b8;
+    --gray-lighter: #cbd5e1;
+    --gray-border: #e2e8f0;
+    
+    --success-green: #059669;
+    --warning-amber: #d97706;
+    --danger-red: #dc2626;
+    
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 30px rgba(30, 64, 175, 0.12);
+    --shadow-xl: 0 20px 50px rgba(30, 64, 175, 0.15);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    .progress-card:hover {
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15) !important;
-    }
+/* ========== 全局容器重置 ========== */
+body > .main-content,
+body > nav + .main-content {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+}
 
-    .progress-bar {
-        height: 8px;
-        border-radius: 4px;
-        transition: width 0.5s ease;
-    }
+body > .main-content .content-wrapper,
+body > nav + .main-content > .content-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
 
+/* ========== 主容器布局 ========== */
+.progress-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--white-off) 0%, var(--primary-blue-bg) 100%);
+    padding: 32px;
+    margin-top: 80px;
+}
+
+/* ========== Hero区域 - 浅蓝渐变背景（参考国际动态） ========== */
+.hero-section {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #e1f5fe 100%);
+    border-radius: var(--radius-xl);
+    padding: 28px 40px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 4px 20px rgba(25, 118, 210, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231976d2' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    border-radius: 0 20px 20px 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0d47a1;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 14px;
+    color: #546e7a;
+    line-height: 1.5;
+    margin-bottom: 0;
+    max-width: 600px;
+    font-weight: 400;
+}
+
+/* ========== 学习进程/课程目录区域 ========== */
+.learning-progress-section {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-border);
+}
+
+.progress-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gray-border);
+}
+
+.progress-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.task-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--gray-dark);
+    font-weight: 600;
+}
+
+.task-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff9800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.mini-progress-bar {
+    width: 120px;
+    height: 8px;
+    background: var(--gray-border);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2196f3 0%, #1976d2 100%);
+    border-radius: 9999px;
+    transition: width var(--transition-slow);
+}
+
+.search-box {
+    position: relative;
+    width: 240px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 36px 8px 14px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--gray-dark);
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+    border-color: var(--primary-blue-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--gray-medium);
+    transition: color var(--transition-fast);
+}
+
+.search-btn:hover {
+    color: var(--primary-blue);
+}
+
+.course-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.course-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.course-list::-webkit-scrollbar-track {
+    background: var(--white-muted);
+    border-radius: 3px;
+}
+
+.course-list::-webkit-scrollbar-thumb {
+    background: var(--gray-lighter);
+    border-radius: 3px;
+}
+
+.course-list::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-light);
+}
+
+.course-unit {
+    margin-bottom: 12px;
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.course-unit:hover {
+    border-color: var(--primary-blue-lighter);
+    box-shadow: var(--shadow-sm);
+}
+
+.unit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    background: var(--white-off);
+    transition: all var(--transition-fast);
+    user-select: none;
+}
+
+.unit-header:hover {
+    background: var(--primary-blue-bg);
+}
+
+.unit-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gray-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-dark);
+    flex-shrink: 0;
+    transition: all var(--transition-base);
+}
+
+.unit-header.expanded .unit-number {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.unit-title {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-dark);
+}
+
+.unit-toggle {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-medium);
+    transition: transform var(--transition-fast);
+}
+
+.unit-header.expanded .unit-toggle {
+    transform: rotate(180deg);
+}
+
+.unit-lessons {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-base);
+    background: white;
+}
+
+.unit-lessons.show {
+    max-height: 500px;
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px 14px 60px;
+    border-bottom: 1px solid var(--white-muted);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.lesson-item:last-child {
+    border-bottom: none;
+}
+
+.lesson-item:hover {
+    background: var(--white-off);
+}
+
+.lesson-status {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 12px;
+    transition: all var(--transition-fast);
+}
+
+.lesson-status.completed {
+    background: #4caf50;
+    color: white;
+}
+
+.lesson-status.in-progress {
+    background: #ff9800;
+    color: white;
+}
+
+.lesson-status.not-started {
+    background: var(--gray-lighter);
+    color: var(--gray-medium);
+}
+
+.lesson-title-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--gray-dark);
+    font-weight: 500;
+}
+
+.lesson-title-text.link-style {
+    color: var(--primary-blue);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+/* ========== 统计卡片网格 ========== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-border);
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-blue-lighter);
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.stat-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.stat-icon.completed { background: #ecfdf5; color: var(--success-green); }
+.stat-icon.difficult { background: #fef2f2; color: var(--danger-red); }
+.stat-icon.time { background: var(--primary-blue-bg); color: var(--primary-blue); }
+
+.stat-badge {
+    padding: 4px 14px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.badge-success { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+.badge-danger { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); }
+.badge-primary { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+
+.progress-wrapper {
+    margin-bottom: 16px;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: var(--gray-border);
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width var(--transition-slow);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-fill-success { background: linear-gradient(90deg, #059669 0%, #10b981 100%); }
+.progress-fill-danger { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); }
+.progress-fill-primary { background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%); }
+
+.stat-footer {
+    font-size: 13px;
+    color: var(--gray-medium);
+    font-weight: 500;
+}
+
+/* ========== 内容区块通用样式 ========== */
+.content-section {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-border);
+    transition: all var(--transition-base);
+}
+
+.content-section:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--white-muted);
+}
+
+.section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--primary-blue-bg) 0%, #dbeafe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+    font-size: 18px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gray-dark);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+/* ========== 学习路径时间轴 ========== */
+.learning-path {
+    position: relative;
+    padding-left: 40px;
+}
+
+.learning-path::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary-blue-lighter) 0%, var(--gray-border) 100%);
+}
+
+.learning-node {
+    position: relative;
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    background: var(--white-off);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-border);
+    transition: all var(--transition-base);
+}
+
+.learning-node:hover {
+    transform: translateX(8px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue-lighter);
+}
+
+.learning-node::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 24px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--gray-border);
+    background: var(--white);
+    z-index: 1;
+    transition: all var(--transition-base);
+}
+
+.learning-node.completed::before {
+    background: var(--success-green);
+    box-shadow: 0 0 0 2px var(--success-green), 0 0 0 4px rgba(5, 150, 105, 0.2);
+}
+
+.learning-node.in-progress::before {
+    background: var(--warning-amber);
+    box-shadow: 0 0 0 2px var(--warning-amber), 0 0 0 4px rgba(217, 119, 6, 0.2);
+}
+
+.learning-node.difficult::before {
+    background: var(--danger-red);
+    box-shadow: 0 0 0 2px var(--danger-red), 0 0 0 4px rgba(220, 38, 38, 0.2);
+    animation: pulse-danger 2s infinite;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { box-shadow: 0 0 0 2px var(--danger-red), 0 0 0 4px rgba(220, 38, 38, 0.2); }
+    50% { box-shadow: 0 0 0 2px var(--danger-red), 0 0 0 8px rgba(220, 38, 38, 0.3); }
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.node-status-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.status-completed { background: #ecfdf5; color: var(--success-green); }
+.status-in-progress { background: #fffbeb; color: var(--warning-amber); }
+.status-difficult { background: #fef2f2; color: var(--danger-red); }
+
+.node-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.node-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--gray-medium);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ========== 困难内容卡片网格 ========== */
+.difficult-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.difficult-card {
+    background: var(--white-off);
+    border: 1px solid var(--gray-border);
+    border-left: 4px solid var(--danger-red);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    transition: all var(--transition-base);
+}
+
+.difficult-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--danger-red);
+    border-left-width: 6px;
+}
+
+.card-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.card-title-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-dark);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.comprehension-badge {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #fef2f2;
+    color: var(--danger-red);
+    white-space: nowrap;
+}
+
+.card-details {
+    font-size: 13px;
+    color: var(--gray-medium);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.card-action-btn {
+    width: 100%;
+    padding: 10px 20px;
+    background: var(--white);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-sm);
+    color: var(--gray-dark);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.card-action-btn:hover {
+    background: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ========== 图表区域 ========== */
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 32px;
+}
+
+.chart-item {
+    background: var(--white-off);
+    border: 1px solid var(--gray-border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-dark);
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-border);
+}
+
+.chart-canvas-wrapper {
+    height: 350px;
+    position: relative;
+}
+
+/* ========== 建议列表 ========== */
+.suggestions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.suggestions-list > li {
+    position: relative;
+    padding: 14px 0 14px 32px;
+    color: var(--gray-dark);
+    line-height: 1.7;
+    font-size: 14px;
+    border-bottom: 1px solid var(--white-muted);
+}
+
+.suggestions-list > li:last-child {
+    border-bottom: none;
+}
+
+.suggestions-list > li::before {
+    content: '→';
+    position: absolute;
+    left: 8px;
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.suggestions-list ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+
+.suggestions-list ul li {
+    font-size: 13px;
+    color: var(--gray-medium);
+    padding: 6px 0;
+}
+
+.suggestions-list ul li::before {
+    content: '•';
+    color: var(--primary-blue-light);
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    background: linear-gradient(135deg, var(--white-off) 0%, var(--primary-blue-bg) 100%);
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--gray-lighter);
+}
+
+.empty-icon {
+    font-size: 48px;
+    color: var(--gray-lighter);
+    margin-bottom: 16px;
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-medium);
+    margin-bottom: 8px;
+}
+
+.empty-description {
+    font-size: 14px;
+    color: var(--gray-light);
+    line-height: 1.6;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .progress-container {
+        padding: 24px;
+        margin-top: 80px;
+    }
+    
+    .hero-section {
+        padding: 36px 40px;
+    }
+    
+    .hero-title {
+        font-size: 30px;
+    }
+    
+    .difficult-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .progress-container {
+        padding: 16px;
+        margin-top: 80px;
+    }
+    
+    .hero-section {
+        padding: 28px 24px;
+    }
+    
+    .hero-title {
+        font-size: 26px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
     .learning-path {
-        position: relative;
-        padding: 20px 0;
+        padding-left: 32px;
     }
-
-    .learning-node {
-        position: relative;
-        display: flex;
-        align-items: center;
-        margin-bottom: 30px;
+    
+    .content-section {
+        padding: 24px;
     }
-
-    .learning-node::before {
-        content: '';
-        position: absolute;
-        left: 20px;
-        top: 40px;
-        bottom: -30px;
-        width: 2px;
-        background-color: #e9ecef;
-    }
-
-    .learning-node:last-child::before {
-        display: none;
-    }
-
-    .node-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1;
-        margin-right: 20px;
-    }
-
-    .node-content {
-        flex: 1;
-    }
-
-    .node-title {
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .node-progress {
-        font-size: 0.875rem;
-        color: #6c757d;
-    }
-
-    .difficult-card {
-        border-left: 4px solid #f8f9fa;
-    }
-
-    .completed-card {
-        border-left: 4px solid #28a745;
-    }
-
-    .in-progress-card {
-        border-left: 4px solid #ffc107;
-    }
-
-    .chart-container {
-        position: relative;
-        height: 400px;
-        width: 100%;
-    }
-
-    .chart-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        text-align: center;
-    }
-
-    .strength-indicator {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-
-    .strength-strong {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .strength-weak {
-        background-color: #dc3545;
-        color: white;
-    }
+}
 </style>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContent = document.querySelector('body > .main-content');
+    if (mainContent) {
+        mainContent.style.cssText = 'margin-top: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important;';
+    }
+
+    const contentWrapper = document.querySelector('body > .main-content > .content-wrapper');
+    if (contentWrapper) {
+        contentWrapper.style.cssText = 'max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important;';
+    }
+
+    initCharts();
+});
+
+function reviewContent(contentId) {
+    window.location.href = `/client/review/${contentId}`;
+}
+
+function initCharts() {
+    const dailyStudyCtx = document.getElementById('dailyStudyChart');
+    if (dailyStudyCtx) {
+        new Chart(dailyStudyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ daily_study_data.labels | tojson | safe }},
+                datasets: [{
+                    label: '学习时长（小时）',
+                    data: {{ daily_study_data.data | tojson | safe }},
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#3b82f6',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#334155',
+                        titleColor: '#ffffff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#475569',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#e2e8f0' },
+                        ticks: { color: '#64748b' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { color: '#64748b' }
+                    }
+                }
+            }
+        });
+    }
+
+    const knowledgeMasteryCtx = document.getElementById('knowledgeMasteryChart');
+    if (knowledgeMasteryCtx) {
+        new Chart(knowledgeMasteryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['已掌握', '学习中', '未开始'],
+                datasets: [{
+                    data: {{ mastery_distribution | tojson | safe }},
+                    backgroundColor: [
+                        '#059669',
+                        '#d97706',
+                        '#e2e8f0'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#334155',
+                            font: { size: 13, weight: '600' },
+                            padding: 16,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#334155',
+                        titleColor: '#ffffff',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#475569',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: ${context.parsed}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="page-header position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 24px; padding: 60px 40px; margin-bottom: 40px; position: relative; overflow: hidden;">
-            <i class="bi bi-activity header-icon text-white"></i>
-            <h1><i class="bi bi-bar-chart-line me-3"></i>学习进度管理</h1>
-            <p>实时跟踪学习进度，智能分析理解程度，提供个性化学习建议。</p>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <!-- 进度概览 -->
-    <div class="col-lg-4 col-md-6">
-        <div class="card progress-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title">已完成内容</h5>
-                    <span class="badge bg-success rounded-pill" id="completed-count">0</span>
-                </div>
-                <div class="progress mb-2">
-                    <div class="progress-bar bg-success" role="progressbar" id="completed-progress" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <p class="text-sm text-muted" id="completed-text">0/0 个节点</p>
-            </div>
+<div class="progress-container">
+    <!-- Hero区域 -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">学习进度管理</h1>
+            <p class="hero-subtitle">追踪您的学习旅程，掌握知识掌握情况，优化学习策略</p>
         </div>
     </div>
 
-    <div class="col-lg-4 col-md-6">
-        <div class="card progress-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title">待理解内容</h5>
-                    <span class="badge bg-danger rounded-pill" id="difficult-count">0</span>
+    <!-- 学习进程/课程目录区域 -->
+    <div class="learning-progress-section">
+        <div class="progress-toolbar">
+            <div class="progress-info">
+                <span class="task-count">
+                    <span class="task-icon">{{ completed_tasks_count }}</span>
+                    已完成任务点: {{ completed_tasks_count }}/{{ total_tasks_count }}
+                </span>
+                <div class="mini-progress-bar">
+                    <div class="mini-progress-fill" style="width: {{ (completed_tasks_count / total_tasks_count * 100) if total_tasks_count > 0 else 0 }}%"></div>
                 </div>
-                <div class="progress mb-2">
-                    <div class="progress-bar bg-danger" role="progressbar" id="difficult-progress" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <p class="text-sm text-muted" id="difficult-text">0/0 个节点</p>
+            </div>
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="搜索..." id="courseSearchInput">
+                <button class="search-btn" onclick="searchCourse()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </button>
             </div>
         </div>
-    </div>
 
-    <div class="col-lg-4 col-md-6">
-        <div class="card progress-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title">总学习时间</h5>
-                    <span class="badge bg-primary rounded-pill" id="total-time">0 分钟</span>
+        <div class="course-list" id="courseList">
+            {% for unit in course_units %}
+            <div class="course-unit" data-unit-id="{{ loop.index }}">
+                <div class="unit-header {{ 'expanded' if loop.first else '' }}" onclick="toggleUnit(this)">
+                    <span class="unit-number">{{ loop.index }}</span>
+                    <span class="unit-title">{{ unit.name }}</span>
+                    <span class="unit-toggle">^</span>
                 </div>
-                <div class="progress mb-2">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <p class="text-sm text-muted">持续学习中</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mt-4">
-    <!-- 学习路径 -->
-    <div class="col-lg-12">
-        <div class="card progress-card">
-            <div class="card-header">
-                <h5 class="card-title">学习路径</h5>
-            </div>
-            <div class="card-body">
-                <div id="learning-path" class="learning-path">
-                    <!-- 学习节点将通过JavaScript动态生成 -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mt-4">
-    <!-- 未理解内容 -->
-    <div class="col-lg-12">
-        <div class="card progress-card">
-            <div class="card-header">
-                <h5 class="card-title">需要加强的内容</h5>
-            </div>
-            <div class="card-body">
-                <div id="difficult-content" class="d-flex flex-wrap gap-3">
-                    <!-- 困难内容将通过JavaScript动态生成 -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4 mt-4">
-    <!-- 学习数据分析 -->
-    <div class="col-lg-12">
-        <div class="card progress-card">
-            <div class="card-header">
-                <h5 class="card-title">学习数据分析</h5>
-            </div>
-            <div class="card-body">
-                <!-- 知识和技能基础 -->
-                <div class="mb-6">
-                    <div class="chart-title">知识和技能基础</div>
-                    <div class="chart-container" style="height: 500px;">
-                        <canvas id="knowledgeSkillsChart"></canvas>
+                <div class="unit-lessons {{ 'show' if loop.first else '' }}">
+                    {% for lesson in unit.lessons %}
+                    <div class="lesson-item" data-lesson-title="{{ lesson.title }}">
+                        <span class="lesson-status {{ lesson.status }}">
+                            {% if lesson.status == 'completed' %}✓{% elif lesson.status == 'in-progress' %}●{% else %}○{% endif %}
+                        </span>
+                        <span class="lesson-title-text {{ 'link-style' if lesson.status == 'in-progress' else '' }}">
+                            {{ lesson.number }} {{ lesson.title }}
+                        </span>
                     </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if has_progress %}
+    <!-- 统计卡片网格 -->
+    <div class="stats-grid">
+        <!-- 完成度卡片 -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3 class="stat-title">
+                    <span class="stat-icon completed">✓</span>
+                    整体完成度
+                </h3>
+                <span class="stat-badge badge-success">{{ overall_completion }}%</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill progress-fill-success" style="width: {{ overall_completion }}%"></div>
+                </div>
+            </div>
+            <p class="stat-footer">已完成 {{ completed_count }} / {{ total_count }} 个知识点</p>
+        </div>
+
+        <!-- 困难点卡片 -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3 class="stat-title">
+                    <span class="stat-icon difficult">⚠</span>
+                    困难内容
+                </h3>
+                <span class="stat-badge badge-danger">{{ difficult_count }}</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill progress-fill-danger" style="width: {{ difficult_percentage }}%"></div>
+                </div>
+            </div>
+            <p class="stat-footer">占总内容的 {{ difficult_percentage }}%，需要重点复习</p>
+        </div>
+
+        <!-- 学习时长卡片 -->
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3 class="stat-title">
+                    <span class="stat-icon time">⏱</span>
+                    学习时长
+                </h3>
+                <span class="stat-badge badge-primary">{{ study_hours }}h</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill progress-fill-primary" style="width: 75%"></div>
+                </div>
+            </div>
+            <p class="stat-footer">本周学习 {{ weekly_hours }} 小时，日均 {{ daily_avg_hours }} 小时</p>
+        </div>
+    </div>
+
+    <!-- 学习路径时间轴 -->
+    <div class="content-section">
+        <div class="section-header">
+            <span class="section-icon">📚</span>
+            <h2 class="section-title">学习路径</h2>
+        </div>
+        
+        <div class="learning-path">
+            {% for stage in learning_path %}
+            <div class="learning-node {{ 'completed' if stage.completed else ('difficult' if stage.is_difficult else 'in-progress') }}">
+                <div class="node-header">
+                    <span class="node-status-icon {{ 'status-completed' if stage.completed else ('status-difficult' if stage.is_difficult else 'status-in-progress') }}">
+                        ✓
+                    </span>
+                    <h4 class="node-title">{{ stage.name }}</h4>
                 </div>
                 
-                <!-- 认知和实践能力 -->
-                <div class="mb-6">
-                    <div class="chart-title">认知和实践能力</div>
-                    <div class="chart-container" style="height: 500px;">
-                        <canvas id="cognitiveSkillsChart"></canvas>
-                    </div>
-                </div>
-                
-                <!-- 学习特点 -->
-                <div class="mb-6">
-                    <div class="chart-title">学习特点</div>
-                    <div class="chart-container" style="height: 500px;">
-                        <canvas id="learningFeaturesChart"></canvas>
-                    </div>
-                </div>
-                
-                <!-- 学习进度趋势 -->
-                <div>
-                    <div class="chart-title">学习进度趋势</div>
-                    <div class="chart-container" style="height: 500px;">
-                        <canvas id="progressTrendChart"></canvas>
-                    </div>
+                <div class="node-meta">
+                    <span class="meta-item">📊 进度：{{ stage.progress }}%</span>
+                    <span class="meta-item">📝 知识点：{{ stage.knowledge_points_count }}</span>
+                    {% if stage.last_study_time %}
+                    <span class="meta-item">🕐 最近学习：{{ stage.last_study_time.strftime('%m月%d日 %H:%M') }}</span>
+                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
-</div>
 
-<div class="row g-4 mt-4">
-    <!-- 学习节奏调整建议 -->
-    <div class="col-lg-12">
-        <div class="card progress-card">
-            <div class="card-header">
-                <h5 class="card-title">学习节奏建议</h5>
+    <!-- 困难内容区域 -->
+    <div class="content-section">
+        <div class="section-header">
+            <span class="section-icon">🎯</span>
+            <h2 class="section-title">需要重点关注的内容</h2>
+        </div>
+
+        <div class="difficult-grid">
+            {% for item in difficult_contents %}
+            <div class="difficult-card">
+                <div class="card-header-top">
+                    <h4 class="card-title-text">{{ item.title }}</h4>
+                    <span class="comprehension-badge">理解度 {{ item.comprehension_rate }}%</span>
+                </div>
+                
+                <p class="card-details">
+                    {% if item.error_count %}错误次数：{{ item.error_count }}次{% endif %}
+                    {% if item.difficulty_level %}难度等级：{% if item.difficulty_level == 'high' %}高{% elif item.difficulty_level == 'medium' %}中{% else %}低{% endif %}{% endif %}
+                </p>
+
+                <button class="card-action-btn" onclick="reviewContent('{{ item.id }}')">
+                    🔄 开始复习
+                </button>
             </div>
-            <div class="card-body">
-                <div id="rhythm-suggestions" class="prose">
-                    <!-- 建议将通过JavaScript动态生成 -->
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 图表分析区域 -->
+    <div class="content-section">
+        <div class="section-header">
+            <span class="section-icon">📈</span>
+            <h2 class="section-title">学习数据分析</h2>
+        </div>
+
+        <div class="chart-grid">
+            <!-- 每日学习趋势图 -->
+            <div class="chart-item">
+                <h4 class="chart-title">每日学习时长趋势</h4>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="dailyStudyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 知识点掌握分布图 -->
+            <div class="chart-item">
+                <h4 class="chart-title">知识点掌握分布</h4>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="knowledgeMasteryChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 改进建议区域 -->
+    <div class="content-section">
+        <div class="section-header">
+            <span class="section-icon">💡</span>
+            <h2 class="section-title">个性化改进建议</h2>
+        </div>
+
+        <ul class="suggestions-list">
+            {% for suggestion in suggestions %}
+            <li>{{ suggestion.content }}
+                {% if suggestion.sub_suggestions %}
+                <ul>
+                    {% for sub in suggestion.sub_suggestions %}
+                    <li>{{ sub }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    {% else %}
+    <!-- 空状态 -->
+    <div class="empty-state">
+        <div class="empty-icon">📖</div>
+        <h3 class="empty-title">暂无学习进度数据</h3>
+        <p class="empty-description">开始您的学习之旅吧！系统将自动记录您的学习进度并生成详细的分析报告。</p>
+    </div>
+    {% endif %}
 </div>
 
 <script>
+// ========== 课程目录交互功能 ==========
+function toggleUnit(header) {
+    const unit = header.closest('.course-unit');
+    const lessons = unit.querySelector('.unit-lessons');
+    const isExpanded = header.classList.contains('expanded');
+
+    header.classList.toggle('expanded');
+    lessons.classList.toggle('show');
+}
+
+function searchCourse() {
+    const searchTerm = document.getElementById('courseSearchInput').value.toLowerCase();
+    const courseUnits = document.querySelectorAll('.course-unit');
+
+    courseUnits.forEach(unit => {
+        const lessonItems = unit.querySelectorAll('.lesson-item');
+        let hasVisibleLesson = false;
+
+        lessonItems.forEach(lesson => {
+            const title = lesson.getAttribute('data-lesson-title').toLowerCase();
+            if (title.includes(searchTerm) || searchTerm === '') {
+                lesson.style.display = 'flex';
+                hasVisibleLesson = true;
+            } else {
+                lesson.style.display = 'none';
+            }
+        });
+
+        unit.style.display = hasVisibleLesson || searchTerm === '' ? 'block' : 'none';
+        
+        if (hasVisibleLesson && searchTerm !== '') {
+            const header = unit.querySelector('.unit-header');
+            const lessons = unit.querySelector('.unit-lessons');
+            if (!header.classList.contains('expanded')) {
+                header.classList.add('expanded');
+                lessons.classList.add('show');
+            }
+        }
+    });
+}
+
+document.getElementById('courseSearchInput')?.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        searchCourse();
+    }
+});
+
 // 获取用户ID（实际应用中从登录状态获取）
 const userId = 1;
 
