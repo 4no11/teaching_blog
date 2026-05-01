@@ -147,26 +147,6 @@ class EducationNewsSource(db.Model):
     def __repr__(self):
         return f'<EducationNewsSource {self.name}>'
 
-class Video(db.Model):
-    __tablename__ = 'videos'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(500), nullable=False)
-    description = db.Column(db.Text)
-    video_url = db.Column(db.String(1000), nullable=False)
-    thumbnail_url = db.Column(db.String(1000))
-    source_name = db.Column(db.String(100))
-    source_url = db.Column(db.String(1000))
-    duration = db.Column(db.Integer)  # in seconds
-    views = db.Column(db.Integer, default=0)
-    likes = db.Column(db.Integer, default=0)
-    category = db.Column(db.String(100))
-    publish_date = db.Column(db.DateTime)
-    fetched_at = db.Column(db.DateTime, default=datetime.utcnow)
-    is_featured = db.Column(db.Boolean, default=False)
-
-    def __repr__(self):
-        return f'<Video {self.title[:30]}...>'
-
 class ContentNode(db.Model):
     """学习内容节点模型"""
     __tablename__ = 'content_nodes'

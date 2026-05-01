@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from services.international_crawler import InternationalEducationCrawler, FeaturedNewsSelector
 from services.news_service import crawl_and_update_news, get_latest_news, get_latest_news_count
-from services.video_service import crawl_and_update_videos
 from models import db
 
 logger = logging.getLogger(__name__)
@@ -62,30 +61,7 @@ class NewsScheduler:
             logger.info(f"精选新闻更新完成，当前有 {latest_count} 条最新新闻")
         except Exception as e:
             logger.error(f"更新精选新闻失败: {e}")
-    
-    def crawl_videos_job(self):
-        """定时爬取视频任务"""
-        try:
-            logger.info("开始执行定时视频爬取任务...")
-            start_time = datetime.now()
-            
-            # 在应用上下文中执行数据库操作
-            if self.app:
-                with self.app.app_context():
-                    count = crawl_and_update_videos()
-            else:
-                count = crawl_and_update_videos()
-            
-            end_time = datetime.now()
-            duration = (end_time - start_time).total_seconds()
-            
-            logger.info(f"定时视频爬取完成: 获取 {count} 条视频，耗时 {duration:.2f} 秒")
-            
-        except Exception as e:
-            logger.error(f"定时视频爬取任务执行失败: {e}")
-    
 
-    
     def start_scheduler(self):
         """启动调度器"""
         if self.is_running:
@@ -102,9 +78,6 @@ class NewsScheduler:
         # 每2小时更新一次精选新闻
         schedule.every(2).hours.do(self.update_featured_news_job)
         
-        # 每6小时爬取一次视频
-        schedule.every(6).hours.do(self.crawl_videos_job)
-        
         # 启动调度器线程
         self.is_running = True
         self.scheduler_thread = threading.Thread(target=self._run_scheduler, daemon=True)
@@ -114,7 +87,6 @@ class NewsScheduler:
         
         # 延迟执行爬取任务，确保应用正常启动
         threading.Timer(10, self.crawl_news_job).start()  # 10秒后执行
-        threading.Timer(15, self.crawl_videos_job).start()  # 15秒后执行
     
     def stop_scheduler(self):
         """停止调度器"""

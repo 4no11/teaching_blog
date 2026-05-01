@@ -1,0 +1,96 @@
+[
+  {
+    "id": "20260502064005",
+    "messages": [
+      {
+        "role": "user",
+        "content": "实验步骤是什么"
+      },
+      {
+        "role": "assistant",
+        "content": "# 实验步骤详解\n\n根据提供的参考资料，我将详细整理百度新闻爬取实验的完整步骤。该实验主要针对大数据方向、大数据技术和应用、大数据采集专业以及计算机专业群中的其他专业设计，目的是掌握Python基本库使用、熟练PyCharm操作并了解百度新闻信息爬取案例。\n\n## 一、实验概述\n\n此实验是掌握Python的基本库使用，并且熟练PyCharm的使用以及了解案例百度新闻的信息爬取。建议课时数为2课时。\n\n## 二、实验步骤\n\n### 步骤1：任务一 - Python基本库简介\n\n**第一节：Urllib库**\n- Urllib是Python内置的HTTP请求库，包含以下模块：\n  * `urllib.request`：请求模块\n  * `urllib.error`：异常处理模块\n  * `urllib.parse`：URL解析模块\n  * `urllib.robotparser`：robots.txt的解析模块\n- Python2和Python3中对urllib的导入形式不同：\n  * Python2：`import urllib` 或 `import urllib2`\n  * Python3：`import urllib`\n\n### 步骤2：任务二 - 获取所要爬取的新闻url\n\n1. 打开百度网站\n2. 点击右上角的\"新闻\"选项\n3. 在打开的界面按住F12（开发者工具）\n4. 选择需要爬取的新闻（可查看元素）\n5. 可以看到的URL地址为：`http://news.baidu.com/`\n\n### 步骤3：任务三 - 使用PyCharm进行新闻爬取\n\n1. 导入必要的模块：\n   ```python\n   import urllib.request\n   import re\n   import datetime\n   ```\n   \n2. 使用urllib发送HTTP请求：\n   ```python\n   # 确认URL地址后向网站发送请求\n   response = urllib.request.urlopen(\"http://news.baidu.com/\")\n   ```\n   \n3. 获取响应状态码：\n   - 响应状态码为200表示请求成功（动作被成功接收、理解和接受）\n   - 200是HTTP标准响应状态码，表示请求成功\n\n### 步骤4：任务四 - 抓取数据\n\n1. **分析HTML结构**：\n   - 打开百度新闻页面，按住F12\n   - 鼠标右击一条新闻的标题，选择\"查看元素\"\n   - 可以发现所有新闻标题都位于`<li class=\"hd\">`标签内\n\n2. **编写正则表达式匹配规则**：\n   - 初始匹配规则：`<li class=\"hd.*?\">`\n   - 优化匹配规则（包含标题标签）：`<li class=\"hd.*?<strong>.*?</strong>`\n   - 进一步优化（包含a标签）：`<li class=\"hd.*?<a href=\".*?\">.*?</a>`\n\n3. **抓取数据**：\n   - 使用正则表达式匹配新闻标题\n   - 代码示例：`re.findall(r'<li class=\"hd.*?<a href=\".*?\">([^<]+)</a>', html_content)`\n\n4. **添加时间戳**：\n   - 在代码中添加时间戳，用于标记爬取时间\n   - 代码示例：\n     ```python\n     import datetime\n     current_time = datetime.datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n     print(f\"爬取时间: {current_time}\")\n     ```\n\n5. **打印抓取结果**：\n   - 将抓取的数据使用`print`打印出来\n   - 可以看到抓取的新闻标题列表\n\n## 三、实验环境要求\n\n1. **硬件环境**：单核CPU、2G内存、30G硬盘\n2. **网络环境**：需要能够支持系统连接网络\n3. **软件环境**：PyCharm（推荐）\n\n## 四、预备知识\n\n1. 了解Python语言基础\n2. 了解Python的基本库\n3. 熟悉PyCharm的软件使用和开发环境\n\n## 五、注意事项\n\n1. 在实际环境中，数据内容过多可能导致处理问题，因此需要添加时间戳\n2. 使用正则表达式匹配时要考虑到可能的乱码问题，需要不断优化匹配规则\n3. 百度新闻页面结构可能有变化，需要根据实际情况调整匹配规则\n\n这个实验步骤完整覆盖了从准备环境、获取URL、发送请求、解析HTML、提取数据到打印结果的整个流程，是学习Python网络爬虫技术的良好实践案例。",
+        "sources": [
+          {
+            "content": "百度新闻的爬取\n课程级别\n适用专业：大数据方向、大数据技术和应用、大数据采集、计算机专业群中其他专业。\n实验概述\n此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取\n建议课时数\n推荐课时数：2课时\n项目前期准备\n实验时硬件环境：单核CPU、2G内存、30G硬盘\n需要能够支持系统连接网络的网络环境\n编译软件的选择，此文档中所使用的是Pycharm\n预备知...",
+            "page": null,
+            "score": 62.1,
+            "source": "2..docx"
+          },
+          {
+            "content": "图26\n步骤4：任务四：抓取数据\n步骤1：在将准备工作完成后，开始抓取页面中的数据。如下图\n图27\n步骤2：爬取完结果如下图\n图28\n步骤3：设置时间点：\n在图10中可以看到爬取的内容，在最后一行显示着当前系统的时间，在实际环境中我们进行爬取的内容可能不止图10中的这一小部分，而数据内容过多会导致我们在处理数据遇到一些问题，所以可以在代码中添加一个时间戳。代码如下图\n使用到先前所添加的一个模块：\n...",
+            "page": null,
+            "score": 59.5,
+            "source": "2..docx"
+          },
+          {
+            "content": "idu.com/，打开网页，按住F12\n图22\n步骤5：我们需要爬取的是这个页面每一条新闻的标题。\n鼠标右击一条新闻的标题，选择“查看元素”，出现下图的窗口：则图片中红框的位置就是那一条新闻标题在HTML中的结构、位置和表现形式：\n图23\n步骤6：从上一步骤中，通过对网页的源代码来进行分析。\n可以看出所有的新闻标题都位于<li class>这个标签内，每一个标签不同是“heline“，那么将它使用...",
+            "page": null,
+            "score": 58.9,
+            "source": "2..docx"
+          },
+          {
+            "content": "y日期三部分构成：\n2、 通过year, month, day三个数据描述符可以进行访问：\n图12\n3、日期的字符串输出，想将日期对象转化为字符串对象的话，可以用到__format__(...)方法以指定格式进行日期输出：\n图13\n第四节：requests库\nRequests是用python语言基于urllib编写的，采用的是Apache2 Licensed开源协议的HTTP库。默认安装好pyth...",
+            "page": null,
+            "score": 64.2,
+            "source": "2..docx"
+          },
+          {
+            "content": "：打开百度。点击右上角的新闻\n图18\n步骤2：在打开的界面按住F12，选择所要爬取的新闻。\n图19\n可以看到的url地址为：http://news.baidu.com/\n步骤3：任务三：使用Pytharm来进行新闻爬取。\n步骤1：导入urllib 和 re 两个模块如下：\nimport urllib.requests  \nimport re  \n步骤2：Python请求http页面如下图，首先确认...",
+            "page": null,
+            "score": 62.1,
+            "source": "2..docx"
+          }
+        ]
+      }
+    ],
+    "created_at": "2026-05-02T06:40:05.037768",
+    "message_count": 2
+  },
+  {
+    "id": "20260502063849",
+    "messages": [
+      {
+        "role": "user",
+        "content": "实验概述是什么"
+      },
+      {
+        "role": "assistant",
+        "content": "根据提供的参考资料，我找到了与\"实验概述\"直接相关的内容。在【文档1】(2..docx)中明确描述了实验概述部分：\n\n**实验概述**  \n此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取。\n\n该实验是针对大数据方向、大数据技术和应用、大数据采集、计算机专业群中其他专业的Python实践课程，主要目的是通过百度新闻爬取的案例，帮助学生掌握Python基本库的使用方法，熟练PyCharm开发环境的操作，并了解网络信息爬取的基本实践。",
+        "sources": [
+          {
+            "content": "百度新闻的爬取\n课程级别\n适用专业：大数据方向、大数据技术和应用、大数据采集、计算机专业群中其他专业。\n实验概述\n此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取\n建议课时数\n推荐课时数：2课时\n项目前期准备\n实验时硬件环境：单核CPU、2G内存、30G硬盘\n需要能够支持系统连接网络的网络环境\n编译软件的选择，此文档中所使用的是Pycharm\n预备知...",
+            "page": null,
+            "score": 62.1,
+            "source": "2..docx"
+          },
+          {
+            "content": ") 方法用于获取分组匹配的子串在整个字符串中的起始位置（子串第一个字符的索引），参数默认值为 0；\nend([group]) 方法用于获取分组匹配的子串在整个字符串中的结束位置（子串最后一个字符的索引+1），参数默认值为 0；\nspan([group]) 方法返回 (start(group), end(group))。\nFindall 函数\n在字符串中找到正则表达式所匹配的所有子串，并返回一个列表...",
+            "page": null,
+            "score": 64.3,
+            "source": "2..docx"
+          },
+          {
+            "content": "个模式字符串和可选的标志参数生成一个正则表达式对象。该对象拥有一系列方法用于正则表达式匹配和替换。\nre 模块也提供了与这些方法功能完全一致的函数，这些函数使用一个模式字符串做为它们的第一个参数。\nre.match函数\nre.match 尝试从字符串的起始位置匹配一个模式，如果不是起始位置匹配成功的话，match()就返回none。函数语法：\nre.match(pattern, string, f...",
+            "page": null,
+            "score": 68.8,
+            "source": "2..docx"
+          },
+          {
+            "content": "ps() 匹配对象函数来获取匹配表达式。\n实例：\n图8\nre.match与re.search的区别\nre.match只匹配字符串的开始，如果字符串开始不符合正则表达式，则匹配失败，函数返回None；而re.search匹配整个字符串，直到找到一个匹配。\n实例如下：\n图9\nCompile函数\ncompile 函数用于编译正则表达式，生成一个正则表达式（ Pattern ）对象，供 match() 和...",
+            "page": null,
+            "score": 68.2,
+            "source": "2..docx"
+          },
+          {
+            "content": "y日期三部分构成：\n2、 通过year, month, day三个数据描述符可以进行访问：\n图12\n3、日期的字符串输出，想将日期对象转化为字符串对象的话，可以用到__format__(...)方法以指定格式进行日期输出：\n图13\n第四节：requests库\nRequests是用python语言基于urllib编写的，采用的是Apache2 Licensed开源协议的HTTP库。默认安装好pyth...",
+            "page": null,
+            "score": 64.2,
+            "source": "2..docx"
+          }
+        ]
+      }
+    ],
+    "created_at": "2026-05-02T06:38:49.287054",
+    "message_count": 2
+  }
+]

@@ -17,6 +17,10 @@ def create_app(config_class=Config):
     from services.ai_service import ai_bp
     from routes.client import client_bp, make_slug as client_slug
     from routes.admin import admin_bp
+    from routes.rag_routes import register_rag_routes
+    
+    # 注册RAG知识库API
+    register_rag_routes(app)
     
     app.register_blueprint(ai_bp, url_prefix='/api/ai')
     app.register_blueprint(client_bp)

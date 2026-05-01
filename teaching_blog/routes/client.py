@@ -833,21 +833,6 @@ def get_international_news():
         'current_page': news_items.page
     })
 
-@client_bp.route('/videos')
-def videos():
-    """视频列表页面"""
-    from services.video_service import get_latest_videos, get_video_categories, get_featured_videos
-    
-    page = request.args.get('page', 1, type=int)
-    category = request.args.get('category')
-    
-    videos = get_latest_videos(page=page, per_page=12, category=category)
-    categories = get_video_categories()
-    featured_videos = get_featured_videos(limit=6)
-    
-    return render_template('client/videos.html', videos=videos, categories=categories, 
-                          featured_videos=featured_videos, selected_category=category)
-
 @client_bp.route('/learning-progress')
 def learning_progress():
     """学习进度管理页面"""
@@ -1034,36 +1019,8 @@ def learning_progress():
                          total_tasks_count=total_tasks_count)
 
 
-
-@client_bp.route('/api/videos')
-def get_videos_api():
-    """获取视频列表的API"""
-    from services.video_service import get_latest_videos, get_video_categories
-    
-    page = request.args.get('page', 1, type=int)
-    category = request.args.get('category')
-    
-    videos = get_latest_videos(page=page, per_page=12, category=category)
-    categories = get_video_categories()
-    
-    return jsonify({
-        'videos': [{
-            'id': v.id,
-            'title': v.title,
-            'description': v.description,
-            'video_url': v.video_url,
-            'thumbnail_url': v.thumbnail_url,
-            'source_name': v.source_name,
-            'duration': v.duration,
-            'views': v.views,
-            'likes': v.likes,
-            'category': v.category,
-            'publish_date': v.publish_date.strftime('%Y-%m-%d') if v.publish_date else None
-        } for v in videos.items],
-        'categories': categories,
-        'total': videos.total,
-        'pages': videos.pages,
-        'current_page': videos.page
-    })
-
+@client_bp.route('/rag-knowledge')
+def rag_knowledge():
+    """RAG知识库问答系统页面"""
+    return render_template('client/rag_knowledge.html')
 

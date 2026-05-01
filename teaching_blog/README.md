@@ -72,10 +72,8 @@ teaching_blog/
 │   └── admin.py                    # 管理端路由
 ├── services/
 │   ├── ai_service.py               # AI服务模块 (含备课/出题/进度管理等API)
-│   ├── video_crawler.py            # 视频爬虫
 │   ├── international_crawler.py    # 国际新闻爬虫
 │   ├── news_service.py             # 新闻服务
-│   ├── video_service.py            # 视频服务
 │   └── scheduler.py                # 定时任务调度器
 ├── templates/
 │   ├── client/                     # 客户端页面模板
@@ -278,7 +276,6 @@ follows (id, user_id, author_id, created_at)
 
 -- 内容系统
 resources (id, name, file_path, post_id)
-videos (id, title, video_url, thumbnail_url, source_name)
 international_education (id, title, organization, country, source_url)
 
 -- 学习进度系统
@@ -306,7 +303,6 @@ learning_progress (id, user_id, content_node_id, completed, comprehension_level,
 ### 🌐 自动内容聚合
 
 - **国际教育资讯**: 实时获取 UNESCO、OECD 等权威组织信息
-- **教育视频聚合**: 整合主流视频平台教育资源
 - **智能去重**: 自动过滤重复和低质量内容
 
 ### 🔧 开发特性
@@ -348,7 +344,6 @@ python app.py
 ```
 services/          # 业务逻辑层
 ├── ai_service.py     # AI功能实现 (含备课/出题/进度管理等)
-├── video_crawler.py  # 视频爬虫
 ├── international_crawler.py # 国际新闻爬虫
 └── scheduler.py      # 定时任务
 

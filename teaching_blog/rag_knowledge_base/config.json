@@ -1,0 +1,1 @@
+{"provider": "ollama", "ollama": {"base_url": "http://localhost:11434", "llm_model": "qwen3:4b", "embedding_model": "nomic-embed-text"}}

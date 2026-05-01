@@ -1,0 +1,13 @@
+This is a test document for ChromaDB integration testing.
+
+Python is a popular programming language used for web development,
+data science, machine learning, and automation.
+
+ChromaDB is a vector database that allows efficient similarity search.
+It is commonly used in RAG (Retrieval-Augmented Generation) applications.
+
+Key features of ChromaDB:
+- Lightweight and easy to use
+- Supports multiple embedding functions
+- Persistent storage option
+- Fast similarity search

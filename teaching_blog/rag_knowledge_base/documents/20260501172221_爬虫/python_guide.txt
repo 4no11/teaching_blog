@@ -1,0 +1,21 @@
+
+Python Programming Guide
+=========================
+
+Python is a high-level, interpreted programming language known for its clear syntax and readability.
+It supports multiple programming paradigms including procedural, object-oriented, and functional programming.
+
+Key Features:
+- Easy to learn and read
+- Extensive standard library
+- Cross-platform compatibility
+- Large community support
+
+Applications:
+1. Web Development (Django, Flask)
+2. Data Science (Pandas, NumPy)
+3. Machine Learning (TensorFlow, PyTorch)
+4. Automation and Scripting
+
+ChromaDB is a vector database that enables efficient similarity search.
+It is commonly used in RAG (Retrieval-Augmented Generation) applications to store and query document embeddings.

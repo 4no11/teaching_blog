@@ -1,0 +1,2 @@
+Progress tracking test.
+This document will be vectorized with progress updates.

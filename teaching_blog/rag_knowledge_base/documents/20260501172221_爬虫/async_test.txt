@@ -1,0 +1,14 @@
+Asynchronous Vectorization Test
+=====================================
+
+This document will be vectorized asynchronously in the background.
+
+Key points:
+- The vectorization runs in a separate thread
+- Progress is tracked in real-time
+- User can check progress via API
+- No timeout issues!
+
+Python is great for AI applications.
+ChromaDB stores vectors efficiently.
+Ollama generates embeddings locally.
