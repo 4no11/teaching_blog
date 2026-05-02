@@ -164,44 +164,62 @@ def register():
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
-        
+
         if not username or not email or not password:
             flash('所有字段都为必填项', 'danger')
             return redirect(url_for('client.register'))
-        
+
         if password != confirm_password:
             flash('两次输入的密码不一致', 'danger')
             return redirect(url_for('client.register'))
-        
+
         if len(password) < 6:
             flash('密码长度至少为6位', 'danger')
             return redirect(url_for('client.register'))
-        
+
         existing_user = User.query.filter(
             (User.username == username) | (User.email == email)
         ).first()
-        
+
         if existing_user:
             if existing_user.username == username:
                 flash('用户名已存在', 'danger')
             else:
                 flash('邮箱已被注册', 'danger')
             return redirect(url_for('client.register'))
-        
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
-        new_user = User(
-            username=username,
-            email=email,
-            password_hash=hashed_password
-        )
-        
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('注册成功！请登录', 'success')
-        return redirect(url_for('client.login'))
-    
+
+        try:
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+            new_user = User(
+                username=username,
+                email=email,
+                password_hash=hashed_password
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            print(f'[SUCCESS] User registered: {username} ({email}), ID: {new_user.id}')
+            flash('注册成功！请登录', 'success')
+            return redirect(url_for('client.login'))
+
+        except Exception as e:
+            db.session.rollback()
+            error_msg = str(e).lower()
+            print(f'[ERROR] Registration failed: username={username}, email={email}, error={str(e)}')
+
+            if 'duplicate' in error_msg or 'unique' in error_msg or '1062' in error_msg:
+                flash('用户名或邮箱已被占用，请更换后重试', 'danger')
+            elif 'data too long' in error_msg or '1406' in error_msg:
+                flash('输入内容过长，请缩短后重试', 'danger')
+            elif 'connection' in error_msg or '2003' in error_msg:
+                flash('数据库连接失败，请稍后重试', 'danger')
+            else:
+                flash(f'注册失败：系统错误，请联系管理员', 'danger')
+
+            return redirect(url_for('client.register'))
+
     return render_template('client/register.html')
 
 @client_bp.route('/about')
