@@ -60,7 +60,7 @@
                 <div class="form-section">
                     <h2 class="section-title">教材上传</h2>
                     <p class="section-description">上传您的教学素材（PDF、Word、TXT格式），AI将根据素材内容智能生成教案</p>
-                    
+
                     <div class="upload-area" id="uploadArea">
                         <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
                         <div class="upload-content" onclick="document.getElementById('fileInput').click()">
@@ -73,6 +73,35 @@
                             <span id="fileName"></span>
                             <button class="remove-file" onclick="removeFile()">&times;</button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 知识库选择 -->
+                <div class="form-section">
+                    <h2 class="section-title">知识库选择</h2>
+                    <p class="section-description">可选择已有的知识库作为教案生成依据，无需上传文件即可基于知识库内容生成教案</p>
+
+                    <select class="custom-select" id="knowledgeBaseSelect">
+                        <option value="">-- 可选：选择知识库（不选则仅使用上传的教材）--</option>
+                    </select>
+
+                    <div id="kbInfo" class="kb-info" style="display: none; margin-top: 12px; padding: 14px; background: linear-gradient(135deg, #e8f4fd 0%, #f0f7ff 100%); border-radius: 10px; border-left: 4px solid #4169e1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <i class="bi bi-database" style="color: #4169e1; font-size: 18px;"></i>
+                            <strong id="kbName" style="color: #1976d2; font-size: 15px;"></strong>
+                        </div>
+                        <p id="kbDescription" style="font-size: 13px; color: #666; margin: 0;"></p>
+                        <div style="margin-top: 8px; display: flex; gap: 15px; font-size: 12px; color: #888;">
+                            <span><i class="bi bi-file-earmark"></i> 文档数: <strong id="kbDocCount">0</strong></span>
+                            <span><i class="bi bi-clock"></i> 创建时间: <strong id="kbCreatedTime"></strong></span>
+                        </div>
+                    </div>
+
+                    <div id="kbLoginHint" style="margin-top: 10px; padding: 12px; background: #fff8e1; border-radius: 8px; border-left: 3px solid #ffc107; display: none;">
+                        <p style="margin: 0; font-size: 13px; color: #f57c00;">
+                            <i class="bi bi-exclamation-circle"></i>
+                            请先 <a href="/login" style="color: #1976d2; font-weight: 600;">登录</a> 后查看您的知识库
+                        </p>
                     </div>
                 </div>
 
@@ -2228,6 +2257,117 @@ let currentStep = 1;
 let uploadedFile = null;
 let fileContent = ''; // 存储文件的实际内容
 let lessonPlanContent = '';
+let selectedKnowledgeBase = null; // 当前选中的知识库
+
+// 页面加载时获取知识库列表
+document.addEventListener('DOMContentLoaded', function() {
+    loadKnowledgeBases();
+});
+
+// 加载知识库列表
+async function loadKnowledgeBases() {
+    const selectEl = document.getElementById('knowledgeBaseSelect');
+    const kbInfoEl = document.getElementById('kbInfo');
+    const loginHintEl = document.getElementById('kbLoginHint');
+
+    try {
+        console.log('[知识库] 正在加载知识库列表...');
+        const response = await fetch('/api/rag/knowledge-bases');
+        
+        if (!response.ok) {
+            console.error(`[知识库] HTTP错误: ${response.status} ${response.statusText}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[知识库] API响应:', data);
+
+        if (data.success) {
+            const kbs = data.knowledge_bases || [];
+            console.log(`[知识库] 获取到 ${kbs.length} 个知识库`);
+
+            if (kbs.length === 0) {
+                selectEl.innerHTML = `
+                    <option value="">-- 暂无知识库 --</option>
+                `;
+                kbInfoEl.style.display = 'none';
+                loginHintEl.style.display = 'block';
+                loginHintEl.innerHTML = `
+                    <p style="margin: 0; font-size: 13px; color: #f57c00;">
+                        <i class="bi bi-info-circle"></i>
+                        您还没有创建知识库。
+                        <a href="/rag-knowledge" style="color: #1976d2; font-weight: 600;">前往创建</a>
+                    </p>
+                `;
+                return;
+            }
+
+            let options = `<option value="">-- 可选：选择知识库（不选则仅使用上传的教材）--</option>`;
+            kbs.forEach(kb => {
+                options += `<option value="${kb.id}">${kb.name}${kb.description ? ' - ' + kb.description : ''}</option>`;
+            });
+
+            selectEl.innerHTML = options;
+
+            // 监听选择变化事件
+            selectEl.onchange = function() {
+                const selectedId = this.value;
+                if (selectedId) {
+                    const kb = kbs.find(k => k.id === selectedId);
+                    if (kb) {
+                        selectedKnowledgeBase = kb;
+                        showKnowledgeBaseInfo(kb);
+                        console.log('[知识库] 已选择:', kb.name);
+                    }
+                } else {
+                    selectedKnowledgeBase = null;
+                    kbInfoEl.style.display = 'none';
+                }
+            };
+
+            loginHintEl.style.display = 'none';
+            console.log('[知识库] 知识库列表加载完成');
+        } else {
+            if (response.status === 401) {
+                selectEl.innerHTML = `<option value="">-- 请先登录 --</option>`;
+                kbInfoEl.style.display = 'none';
+                loginHintEl.style.display = 'block';
+                console.log('[知识库] 用户未登录');
+            } else {
+                console.error('[知识库] 获取失败:', data.error);
+            }
+        }
+
+    } catch (error) {
+        console.error('[知识库] 加载失败:', error);
+        selectEl.innerHTML = `<option value="">-- 加载失败 --</option>`;
+        kbInfoEl.style.display = 'none';
+        loginHintEl.style.display = 'block';
+        loginHintEl.innerHTML = `
+            <p style="margin: 0; font-size: 13px; color: #ff4757;">
+                <i class="bi bi-exclamation-triangle"></i>
+                知识库加载失败: ${error.message}
+            </p>
+        `;
+    }
+}
+
+// 显示知识库详细信息
+function showKnowledgeBaseInfo(kb) {
+    const kbInfoEl = document.getElementById('kbInfo');
+    document.getElementById('kbName').textContent = kb.name;
+    document.getElementById('kbDescription').textContent = kb.description || '暂无描述';
+    document.getElementById('kbDocCount').textContent = kb.document_count || 0;
+
+    if (kb.created_at) {
+        const createdDate = new Date(kb.created_at);
+        document.getElementById('kbCreatedTime').textContent = createdDate.toLocaleDateString('zh-CN');
+    } else {
+        document.getElementById('kbCreatedTime').textContent = '未知';
+    }
+
+    kbInfoEl.style.display = 'block';
+}
 
 function switchStep(step) {
     document.querySelectorAll('.step-item').forEach((item, index) => {
@@ -2300,33 +2440,37 @@ function addQuickTag(tag) {
 async function startGeneration() {
     const stage = document.getElementById('stageSelect').value;
     const requirements = document.getElementById('customRequirements').value;
-    
-    if (!uploadedFile && !requirements) {
-        alert('请上传教材文件或填写自定义要求');
+
+    // 验证：至少需要满足以下条件之一
+    // 1. 上传了教材文件
+    // 2. 选择了知识库
+    // 3. 填写了自定义要求
+    if (!uploadedFile && !selectedKnowledgeBase && !requirements) {
+        alert('请上传教材文件、选择知识库或填写自定义要求');
         return;
     }
-    
+
     if (!stage) {
         alert('请选择教学阶段');
         return;
     }
-    
+
     // 如果有文件但还没读取完成，等待一下
     if (uploadedFile && !fileContent) {
         showToast('正在读取文件，请稍候...');
         // 等待文件读取完成（最多等3秒）
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         if (!fileContent) {
             alert('文件读取失败，请重新上传');
             return;
         }
     }
-    
+
     const generateBtn = document.getElementById('generateBtn');
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 正在生成...';
-    
+
     switchStep(2);
     await simulateLoading();
 }
@@ -2365,7 +2509,7 @@ async function simulateLoading() {
 
 async function generateLessonPlan() {
     switchStep(3);
-    
+
     const outputEl = document.getElementById('lessonPlanOutput');
     outputEl.innerHTML = `
         <div style="text-align: center; padding: 60px 20px;">
@@ -2380,30 +2524,31 @@ async function generateLessonPlan() {
             <p style="font-size: 13px; color: #999; margin-top: 8px;">预计需要10-20秒</p>
         </div>
     `;
-    
+
     try {
-        const requestData = {
-            stage: document.getElementById('stageSelect').value,
-            requirements: document.getElementById('customRequirements').value,
-            fileName: uploadedFile ? uploadedFile.name : null
-        };
-        
-        // 如果有文件内容，添加到请求中（限制长度避免超出API限制）
-        if (fileContent && fileContent.length > 0) {
-            // 保留前8000字符，确保包含核心内容
-            requestData.fileContent = fileContent.substring(0, 8000);
-            if (fileContent.length > 8000) {
-                requestData.fileContent += '\n\n[注：文件内容过长，已截取前8000字符]';
-            }
-            console.log('发送文件内容长度:', requestData.fileContent.length);
+        // 使用FormData上传文件（支持PDF/Word等二进制格式）
+        const formData = new FormData();
+        formData.append('stage', document.getElementById('stageSelect').value);
+        formData.append('requirements', document.getElementById('customRequirements').value);
+
+        // 如果选择了知识库，添加到请求中
+        if (selectedKnowledgeBase) {
+            formData.append('knowledge_base_id', selectedKnowledgeBase.id);
+            formData.append('knowledge_base_name', selectedKnowledgeBase.name);
+            console.log('使用知识库生成教案:', selectedKnowledgeBase.name, '(ID:', selectedKnowledgeBase.id + ')');
         }
-        
+
+        // 如果有上传的文件，直接发送原始文件（让后端解析）
+        if (uploadedFile) {
+            formData.append('file', uploadedFile);
+            console.log('上传文件:', uploadedFile.name, '大小:', uploadedFile.size, '字节');
+        }
+
         const response = await fetch('/api/ai/generate-lesson-plan-stream', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestData)
+            body: formData  // 不设置Content-Type，让浏览器自动设置boundary
         });
-        
+
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let result = '';

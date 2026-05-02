@@ -10,7 +10,8 @@ class Config:
     # 配置方式：set AI_API_KEY=你的API密钥
     AI_API_KEY = os.environ.get('AI_API_KEY') or 'sk-meqhrwnstykacbxnjcwwpsxcwfzkvzzldnwbookzphpjhvlx'
     AI_BASE_URL = os.environ.get('AI_BASE_URL') or 'https://api.siliconflow.cn/v1'
-    AI_MODEL = os.environ.get('AI_MODEL') or 'deepseek-ai/DeepSeek-V2.5'
+    # 可用模型: Qwen/Qwen2.5-72B-Instruct (推荐), deepseek-ai/DeepSeek-V3, Qwen/Qwen2.5-7B-Instruct(免费)
+    AI_MODEL = os.environ.get('AI_MODEL') or 'Qwen/Qwen2.5-72B-Instruct'
     
     # 分页配置
     POSTS_PER_PAGE = 10

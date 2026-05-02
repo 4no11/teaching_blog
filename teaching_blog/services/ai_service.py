@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import sys
 from flask import Blueprint, request, jsonify, Response
 from config import Config
 from pptx import Presentation
@@ -8,7 +9,16 @@ from docx import Document
 from PyPDF2 import PdfReader
 from werkzeug.utils import secure_filename
 
-ALLOWED_EXTENSIONS = {'ppt', 'pptx', 'doc', 'docx', 'pdf'}
+# 安全打印函数 - 解决Windows GBK编码问题
+def safe_print(*args, **kwargs):
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        # 编码失败时，替换非ASCII字符后重试
+        safe_args = [str(arg).encode('gbk', errors='replace').decode('gbk') if isinstance(arg, str) else arg for arg in args]
+        print(*safe_args, **kwargs)
+
+ALLOWED_EXTENSIONS = {'ppt', 'pptx', 'doc', 'docx', 'pdf', 'txt'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -56,6 +66,55 @@ def extract_text_from_file(filepath, ext):
     elif ext == 'pdf':
         return extract_text_from_pdf(filepath)
     return "不支持的文件格式"
+
+def extract_text_from_uploaded_file(uploaded_file):
+    """从上传的文件对象中提取文本内容"""
+    import tempfile
+    import os
+
+    filename = uploaded_file.filename
+    if not filename:
+        return ""
+
+    # 获取文件扩展名
+    ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else ''
+
+    # 对于TXT文件，直接读取
+    if ext == 'txt':
+        try:
+            content = uploaded_file.read()
+            # 尝试多种编码
+            for encoding in ['utf-8', 'gbk', 'gb2312', 'latin-1']:
+                try:
+                    return content.decode(encoding)
+                except:
+                    continue
+            return content.decode('utf-8', errors='ignore')
+        except Exception as e:
+            raise Exception(f"TXT文件读取失败: {str(e)}")
+
+    # 对于二进制文件（PDF/Word/PPT），先保存到临时文件再解析
+    if ext in ALLOWED_EXTENSIONS:
+        # 创建临时文件
+        temp_fd, temp_path = tempfile.mkstemp(suffix=f'.{ext}')
+        try:
+            # 保存上传的文件到临时位置
+            uploaded_file.save(temp_path)
+
+            # 使用现有的解析函数提取文本
+            text = extract_text_from_file(temp_path, ext)
+
+            return text
+        finally:
+            # 清理临时文件
+            try:
+                os.close(temp_fd)
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            except:
+                pass
+    else:
+        raise Exception(f"不支持的文件格式: .{ext}")
 
 ai_bp = Blueprint('ai', __name__)
 
@@ -912,35 +971,123 @@ def generate_reflection_stream():
 
 @ai_bp.route('/generate-lesson-plan-stream', methods=['POST'])
 def generate_lesson_plan_stream():
-    """流式生成教案"""
-    data = request.get_json()
-    stage = data.get('stage', '高中')
-    requirements = data.get('requirements', '')
-    file_content = data.get('fileContent', '')  # 接收文件内容
-    file_name = data.get('fileName', '')
-    
-    # 构建用户消息
-    user_message = f'请为{stage}阶段设计一份完整教案。\n\n'
-    
-    # 如果有教材内容，添加到prompt中
-    if file_content and len(file_content.strip()) > 0:
-        user_message += f'''【上传的教材内容】（文件名：{file_name}）
-请严格基于以下教材内容来设计教案，确保教案内容与教材紧密相关：
+    """流式生成教案（支持基于教材文件或知识库生成）"""
+    try:
+        # 支持两种请求方式：JSON 和 FormData
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # FormData方式：接收上传的文件
+            stage = request.form.get('stage', '高中')
+            requirements = request.form.get('requirements', '')
+            knowledge_base_id = request.form.get('knowledge_base_id')
+            knowledge_base_name = request.form.get('knowledge_base_name', '')
+
+            file_content = ''
+            file_name = ''
+
+            # 解析上传的文件
+            if 'file' in request.files:
+                uploaded_file = request.files['file']
+                if uploaded_file and uploaded_file.filename:
+                    file_name = uploaded_file.filename
+                    safe_print(f'[AI服务] 收到文件: {file_name}, 大小: {uploaded_file.content_length} 字节')
+
+                    # 根据文件类型解析内容
+                    try:
+                        file_content = extract_text_from_uploaded_file(uploaded_file)
+                        safe_print(f'[AI服务] 文件解析成功，内容长度: {len(file_content)} 字符')
+                    except Exception as e:
+                        safe_print(f'[AI服务] 文件解析失败: {e}')
+                        file_content = f'[文件解析失败: {str(e)}]'
+        else:
+            # JSON方式：接收文件内容字符串
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': '请求数据为空'}), 400
+
+            stage = data.get('stage', '高中')
+            requirements = data.get('requirements', '')
+            file_content = data.get('fileContent', '')
+            file_name = data.get('fileName', '')
+            knowledge_base_id = data.get('knowledge_base_id')
+            knowledge_base_name = data.get('knowledge_base_name', '')
+
+        safe_print(f'[AI服务] 收到教案生成请求: stage={stage}, has_content={bool(file_content)}, kb_id={knowledge_base_id}, kb_name={knowledge_base_name}')
+
+        # 构建用户消息
+        user_message = f'请为{stage}阶段设计一份完整教案。\n\n'
+
+        # 如果选择了知识库，从知识库检索相关内容
+        if knowledge_base_id:
+            safe_print(f'[AI服务] 正在查询知识库: {knowledge_base_id} ({knowledge_base_name})')
+            try:
+                from services.rag_service import get_rag_service
+                rag_service_instance = get_rag_service()
+
+                query = f'{stage}教学 教案设计 {requirements}' if requirements else f'{stage}教学 教案设计'
+                safe_print(f'[AI服务] RAG查询语句: {query}')
+
+                rag_result = rag_service_instance.chat(
+                    kb_id=knowledge_base_id,
+                    question=query,
+                    top_k=5,
+                    return_sources=True
+                )
+
+                safe_print(f'[AI服务] RAG查询结果: success={rag_result.get("success")}, answer长度={len(rag_result.get("answer", "")) if rag_result.get("answer") else 0}')
+
+                if rag_result.get('success') and rag_result.get('answer'):
+                    kb_content = rag_result['answer']
+                    sources = rag_result.get('sources', [])
+
+                    user_message += f'''【选定的知识库】（名称：{knowledge_base_name}）
+请严格基于以下知识库内容来设计教案，确保教案内容与知识库紧密相关：
+
+知识库相关内容：
+{kb_content}
+'''
+
+                    if sources:
+                        user_message += f'\n引用来源：\n'
+                        for i, source in enumerate(sources[:3], 1):
+                            user_message += f'{i}. {source.get("source", "未知文档")} (相似度: {source.get("score", 0)}%)\n'
+
+                    user_message += '\n---\n'
+                else:
+                    safe_print(f'[AI服务] 知识库查询未返回有效内容')
+                    user_message += f'【注意】知识库"{knowledge_base_name}"中未找到相关内容，将基于通用知识生成教案。\n\n'
+
+            except Exception as e:
+                import traceback
+                safe_print(f'[AI服务] 知识库查询失败: {e}')
+                traceback.print_exc()
+                user_message += f'【注意】知识库"{knowledge_base_name}"查询失败（{str(e)}），将基于通用知识生成教案。\n\n'
+
+        # 如果有教材内容，添加到prompt中
+        if file_content and len(file_content.strip()) > 0:
+            user_message += f'''{"【上传的教材内容】" if not knowledge_base_id else "【补充教材内容】"}（文件名：{file_name}）
+{'请严格基于' if not knowledge_base_id else '另外参考'}以下教材内容来设计教案，确保教案内容与教材紧密相关：
 
 {file_content}
 
 ---
 '''
-    
-    user_message += f'''用户自定义要求：
+
+        # 检查是否有足够的内容来生成教案
+        has_content = bool(knowledge_base_id) or (file_content and len(file_content.strip()) > 0)
+        if not has_content and not requirements:
+            return jsonify({'error': '请提供教材内容、选择知识库或填写自定义要求'}), 400
+
+        user_message += f'''用户自定义要求：
 {requirements if requirements else "无特殊要求，请根据通用标准设计"}
 
 请开始生成教案：'''
-    
-    messages = [
-        {
-            'role': 'system',
-            'content': '''你是一个专业的教学设计专家，擅长为不同学科和年级设计高质量教案。
+
+        safe_print(f'[AI服务] 最终prompt长度: {len(user_message)} 字符')
+
+        messages = [
+            {
+                'role': 'system',
+                'content': '''你是一个专业的教学设计专家，擅长为不同学科和年级设计高质量教案。
 请严格按照以下格式生成完整的教案内容：
 
 # 教案标题
@@ -1005,36 +1152,42 @@ def generate_lesson_plan_stream():
 - 注重学生主体性和互动性
 - 体现现代教育理念
 - 字数在2000-3000字之间'''
-        },
-        {
-            'role': 'user',
-            'content': user_message
-        }
-    ]
-    
-    def generate_stream():
-        full_response = ""
-        for chunk in stream_ai_api(messages, max_tokens=3000):
-            yield chunk
-            try:
-                chunk_data = json.loads(chunk.replace('data: ', '').strip())
-                if 'choices' in chunk_data:
-                    content = chunk_data['choices'][0].get('delta', {}).get('content', '')
-                    full_response += content
-                elif 'error' in chunk_data:
-                    full_response = chunk_data['error']
-            except:
-                pass
-    
-    return Response(
-        generate_stream(),
-        mimetype='text/event-stream',
-        headers={
-            'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no',
-            'Connection': 'keep-alive'
-        }
-    )
+            },
+            {
+                'role': 'user',
+                'content': user_message
+            }
+        ]
+
+        def generate_stream():
+            full_response = ""
+            for chunk in stream_ai_api(messages, max_tokens=3000):
+                yield chunk
+                try:
+                    chunk_data = json.loads(chunk.replace('data: ', '').strip())
+                    if 'choices' in chunk_data:
+                        content = chunk_data['choices'][0].get('delta', {}).get('content', '')
+                        full_response += content
+                    elif 'error' in chunk_data:
+                        full_response = chunk_data['error']
+                except:
+                    pass
+
+        return Response(
+            generate_stream(),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+                'Connection': 'keep-alive'
+            }
+        )
+
+    except Exception as e:
+        import traceback
+        safe_print(f'[AI服务] 教案生成失败: {e}')
+        traceback.print_exc()
+        return jsonify({'error': f'教案生成失败: {str(e)}'}), 500
 
 @ai_bp.route('/extract-knowledge-points', methods=['POST'])
 def extract_knowledge_points_api():
