@@ -1,0 +1,50 @@
+[
+  {
+    "id": "20260502082022",
+    "title": "实验概述是什么",
+    "messages": [
+      {
+        "role": "user",
+        "content": "实验概述是什么"
+      },
+      {
+        "role": "assistant",
+        "content": "根据您提供的参考资料，我仔细查找了所有文档中关于\"实验概述\"的信息。\n\n在文档1（file_1777679411235_coceyc.docx）中，明确有以下内容：\n\n**实验概述**\n此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取\n\n这是参考资料中唯一提到的\"实验概述\"内容。该描述清晰地说明了本实验的核心目标和内容，即通过百度新闻爬取案例来掌握Python基本库的使用、熟练Pycharm开发环境操作，并了解网络信息爬取的基本实践。\n\n因此，实验概述就是：此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取。",
+        "sources": [
+          {
+            "content": "百度新闻的爬取\n课程级别\n适用专业：大数据方向、大数据技术和应用、大数据采集、计算机专业群中其他专业。\n实验概述\n此实验是掌握Python的基本库使用，并且熟练Pycharm的使用以及了解案例百度新闻的信息爬取\n建议课时数\n推荐课时数：2课时\n项目前期准备\n实验时硬件环境：单核CPU、2G内存、30G硬盘\n需要能够支持系统连接网络的网络环境\n编译软件的选择，此文档中所使用的是Pycharm\n预备知...",
+            "page": null,
+            "score": 62.1,
+            "source": "file_1777679411235_coceyc.docx"
+          },
+          {
+            "content": ") 方法用于获取分组匹配的子串在整个字符串中的起始位置（子串第一个字符的索引），参数默认值为 0；\nend([group]) 方法用于获取分组匹配的子串在整个字符串中的结束位置（子串最后一个字符的索引+1），参数默认值为 0；\nspan([group]) 方法返回 (start(group), end(group))。\nFindall 函数\n在字符串中找到正则表达式所匹配的所有子串，并返回一个列表...",
+            "page": null,
+            "score": 64.3,
+            "source": "file_1777679411235_coceyc.docx"
+          },
+          {
+            "content": "个模式字符串和可选的标志参数生成一个正则表达式对象。该对象拥有一系列方法用于正则表达式匹配和替换。\nre 模块也提供了与这些方法功能完全一致的函数，这些函数使用一个模式字符串做为它们的第一个参数。\nre.match函数\nre.match 尝试从字符串的起始位置匹配一个模式，如果不是起始位置匹配成功的话，match()就返回none。函数语法：\nre.match(pattern, string, f...",
+            "page": null,
+            "score": 68.8,
+            "source": "file_1777679411235_coceyc.docx"
+          },
+          {
+            "content": "ps() 匹配对象函数来获取匹配表达式。\n实例：\n图8\nre.match与re.search的区别\nre.match只匹配字符串的开始，如果字符串开始不符合正则表达式，则匹配失败，函数返回None；而re.search匹配整个字符串，直到找到一个匹配。\n实例如下：\n图9\nCompile函数\ncompile 函数用于编译正则表达式，生成一个正则表达式（ Pattern ）对象，供 match() 和...",
+            "page": null,
+            "score": 68.2,
+            "source": "file_1777679411235_coceyc.docx"
+          },
+          {
+            "content": "y日期三部分构成：\n2、 通过year, month, day三个数据描述符可以进行访问：\n图12\n3、日期的字符串输出，想将日期对象转化为字符串对象的话，可以用到__format__(...)方法以指定格式进行日期输出：\n图13\n第四节：requests库\nRequests是用python语言基于urllib编写的，采用的是Apache2 Licensed开源协议的HTTP库。默认安装好pyth...",
+            "page": null,
+            "score": 64.2,
+            "source": "file_1777679411235_coceyc.docx"
+          }
+        ]
+      }
+    ],
+    "created_at": "2026-05-02T08:20:22.489281",
+    "message_count": 2
+  }
+]
