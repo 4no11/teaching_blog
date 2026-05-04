@@ -1,34 +1,10 @@
-# RAG知识库系统依赖 (基于 LangChain 框架)
-# 安装: pip install -r requirements_rag.txt
-
-# LangChain 核心
+# RAG dependencies
 langchain>=0.3.0
 langchain-core>=0.3.0
-
-# LangChain 兼容层（用于云端 API）
-# langchain-openai 在某些环境有兼容性问题，已用自定义实现替代
-# 如需原生支持可安装: pip install langchain-openai
-
-# 向量数据库（使用自研纯Python兼容层，无需安装 chromadb）
-# chromadb>=0.4.0  # 可选：如需原生 ChromaDB
-
-# 文档处理
 pypdf>=4.0.0
 python-docx>=1.1.0
-
-# Web框架（项目已有）
 flask>=3.0.0
 werkzeug>=3.0.0
-
-# 工具库
 requests>=2.31.0
 python-multipart>=0.0.6
 pydantic>=2.0.0
-
-# 可选：Ollama 本地模型支持
-# ollama>=0.1.0
-# langchain-ollama>=0.1.0
-
-# 可选：HuggingFace 本地模型支持
-# transformers>=4.30.0
-# langchain-huggingface>=0.1.0
