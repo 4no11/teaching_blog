@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  openmaic:
+    build: ./OpenMAIC
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./OpenMAIC/.env.local
+    volumes:
+      - openmaic-data:/app/data
+    restart: unless-stopped
+    networks:
+      - teaching-network
+
+  teaching-blog:
+    build: ./teaching_blog
+    ports:
+      - "5000:5000"
+    volumes:
+      - blog-data:/app/data
+      - ./teaching_blog/rag_knowledge_base:/app/rag_knowledge_base
+    restart: unless-stopped
+    networks:
+      - teaching-network
+
+volumes:
+  openmaic-data:
+  blog-data:
+
+networks:
+  teaching-network:
+    driver: bridge

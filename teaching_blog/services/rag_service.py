@@ -139,21 +139,25 @@ class RAGKnowledgeService:
 
     def _setup_openai(self):
         """OpenAI API 配置"""
+        from config import Config
+        default_api_key = Config.AI_API_KEY
+        default_base_url = Config.AI_BASE_URL
+
         self.openai_api_key = os.environ.get(
             'OPENAI_API_KEY',
-            self.config.get('openai', {}).get('api_key', '')
+            self.config.get('openai', {}).get('api_key', default_api_key)
         )
         self.openai_base_url = os.environ.get(
             'OPENAI_BASE_URL',
-            self.config.get('openai', {}).get('base_url', None)
+            self.config.get('openai', {}).get('base_url', default_base_url)
         )
         self.llm_model = os.environ.get(
             'LLM_MODEL',
-            self.config.get('openai', {}).get('llm_model', 'gpt-4o-mini')
+            self.config.get('openai', {}).get('llm_model', 'Qwen/Qwen2.5-72B-Instruct')
         )
         self.embedding_model = os.environ.get(
             'EMBEDDING_MODEL',
-            self.config.get('openai', {}).get('embedding_model', 'text-embedding-3-small')
+            self.config.get('openai', {}).get('embedding_model', 'BAAI/bge-large-zh-v1.5')
         )
 
         if not self.openai_api_key:
@@ -225,6 +229,11 @@ class RAGKnowledgeService:
             raise ValueError("请设置 ZHIPUAI_API_KEY 环境变量或在 config.json 中配置")
 
         logger.info(f"[Zhipu] LLM: {self.llm_model}, Embedding: {self.embedding_model}")
+
+    def _resolve_path(self, stored_path: str) -> str:
+        if os.path.isabs(stored_path):
+            return stored_path
+        return os.path.join(self.base_dir, stored_path)
 
     def _load_metadata(self):
         """加载知识库元数据"""
@@ -512,8 +521,8 @@ class RAGKnowledgeService:
             'description': description,
             'created_at': datetime.now().isoformat(),
             'document_count': 0,
-            'path': kb_path,
-            'chroma_path': chroma_path,
+            'path': os.path.relpath(kb_path, self.base_dir),
+            'chroma_path': os.path.relpath(chroma_path, self.base_dir),
             'user_id': user_id
         }
 
@@ -535,11 +544,11 @@ class RAGKnowledgeService:
         kb_info = self.metadata['knowledge_bases'][kb_id]
 
         try:
-            if os.path.exists(kb_info['path']):
-                shutil.rmtree(kb_info['path'])
+            if os.path.exists(self._resolve_path(kb_info['path'])):
+                shutil.rmtree(self._resolve_path(kb_info['path']))
 
-            if os.path.exists(kb_info.get('chroma_path', '')):
-                shutil.rmtree(kb_info['chroma_path'])
+            if os.path.exists(self._resolve_path(kb_info.get('chroma_path', ''))):
+                shutil.rmtree(self._resolve_path(kb_info['chroma_path']))
 
             del self.metadata['knowledge_bases'][kb_id]
             self._save_metadata()
@@ -669,8 +678,8 @@ class RAGKnowledgeService:
             # 初始化 Embeddings（OpenAI 用 HTTP，其他用 LangChain）
             self._init_embeddings()
 
-            chroma_path = kb_info.get('chroma_path',
-                                      os.path.join(self.chroma_dir, kb_id))
+            chroma_path = self._resolve_path(kb_info.get('chroma_path',
+                                      os.path.join(self.chroma_dir, kb_id)))
             os.makedirs(chroma_path, exist_ok=True)
 
             logger.info(f"正在生成 {len(chunks)} 个向量并存储到ChromaDB...")
@@ -973,10 +982,10 @@ class RAGKnowledgeService:
             from services.chroma_compat import PersistentClient as ChromaPersistentClient
             import requests
 
-            chroma_path = self.metadata['knowledge_bases'][kb_id].get(
+            chroma_path = self._resolve_path(self.metadata['knowledge_bases'][kb_id].get(
                 'chroma_path',
                 os.path.join(self.chroma_dir, kb_id)
-            )
+            ))
 
             if not os.path.exists(chroma_path):
                 return {
@@ -1195,10 +1204,10 @@ class RAGKnowledgeService:
             import chromadb
             import requests
 
-            chroma_path = self.metadata['knowledge_bases'][kb_id].get(
+            chroma_path = self._resolve_path(self.metadata['knowledge_bases'][kb_id].get(
                 'chroma_path',
                 os.path.join(self.chroma_dir, kb_id)
-            )
+            ))
 
             if not os.path.exists(chroma_path):
                 yield json.dumps({'error': '该知识库暂无文档数据'}, ensure_ascii=False)

@@ -6,8 +6,8 @@
       "description": "",
       "created_at": "2026-05-02T04:15:30.863355",
       "document_count": 10,
-      "path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\knowledge_bases\\20260502041530_爬虫",
-      "chroma_path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\chroma_db\\20260502041530_爬虫"
+      "path": "knowledge_bases\\20260502041530_爬虫",
+      "chroma_path": "chroma_db\\20260502041530_爬虫"
     },
     "20260502054105_贝叶斯": {
       "id": "20260502054105_贝叶斯",
@@ -15,8 +15,8 @@
       "description": "",
       "created_at": "2026-05-02T05:41:05.523322",
       "document_count": 6,
-      "path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\knowledge_bases\\20260502054105_贝叶斯",
-      "chroma_path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\chroma_db\\20260502054105_贝叶斯"
+      "path": "knowledge_bases\\20260502054105_贝叶斯",
+      "chroma_path": "chroma_db\\20260502054105_贝叶斯"
     },
     "20260502071833_爬虫": {
       "id": "20260502071833_爬虫",
@@ -24,8 +24,8 @@
       "description": "",
       "created_at": "2026-05-02T07:18:33.520218",
       "document_count": 2,
-      "path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\knowledge_bases\\20260502071833_爬虫",
-      "chroma_path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\chroma_db\\20260502071833_爬虫",
+      "path": "knowledge_bases\\20260502071833_爬虫",
+      "chroma_path": "chroma_db\\20260502071833_爬虫",
       "user_id": 1
     },
     "20260502072533_贝叶斯": {
@@ -34,8 +34,8 @@
       "description": "",
       "created_at": "2026-05-02T07:25:33.779071",
       "document_count": 0,
-      "path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\knowledge_bases\\20260502072533_贝叶斯",
-      "chroma_path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\chroma_db\\20260502072533_贝叶斯",
+      "path": "knowledge_bases\\20260502072533_贝叶斯",
+      "chroma_path": "chroma_db\\20260502072533_贝叶斯",
       "user_id": 1
     },
     "20260502072604_python": {
@@ -44,8 +44,8 @@
       "description": "",
       "created_at": "2026-05-02T07:26:04.921134",
       "document_count": 0,
-      "path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\knowledge_bases\\20260502072604_python",
-      "chroma_path": "D:\\boke\\teaching_blog\\rag_knowledge_base\\chroma_db\\20260502072604_python",
+      "path": "knowledge_bases\\20260502072604_python",
+      "chroma_path": "chroma_db\\20260502072604_python",
       "user_id": 3
     }
   }

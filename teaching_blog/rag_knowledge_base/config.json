@@ -1,1 +1,7 @@
-{"provider": "ollama", "ollama": {"base_url": "http://localhost:11434", "llm_model": "qwen3:4b", "embedding_model": "nomic-embed-text"}}
+{
+  "provider": "openai",
+  "openai": {
+    "llm_model": "Qwen/Qwen2.5-72B-Instruct",
+    "embedding_model": "BAAI/bge-large-zh-v1.5"
+  }
+}
